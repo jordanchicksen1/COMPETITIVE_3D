@@ -1,0 +1,315 @@
+using System.Collections;
+using System.Collections.Generic;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
+
+[RequireComponent(typeof(Rigidbody))]
+public class PlayerController3D : MonoBehaviour
+{
+    [SerializeField]
+    private Vector3 moveInput;
+    private Vector2 lookInput;
+
+    private Rigidbody rb;
+    private PlayerInput playerInput;
+    private Animator animator;
+
+    [Header("Movement")]
+    public float speed = 5f;
+    public float jumpForce = 5f;
+    public float SpeedMultiplier;
+    private float RunSpeed;
+    [Header("Look")]
+    public float lookSensitivity = 120f;
+    [SerializeField]
+    private Transform CameraHolder;
+    public float minLookX = -60f;
+    public float maxLookX = 60f;
+
+    private float xRotation;
+
+
+    //Interactions
+    private GameObject InteractableObject;
+    public LayerMask Interact;
+    [SerializeField]
+    private Transform RayPoint;
+
+
+    //Attack
+    [SerializeField]
+    private bool isChargingWeapon;
+    [SerializeField]
+    private float attackPower;
+    [SerializeField]
+    private GameObject heldWeapon;
+    [SerializeField]
+    private Transform HoldingPosition;
+    public LayerMask EnemyLayer;
+    [SerializeField]
+    private int AimDistance;
+    public GameObject EnemyTarget;
+    [SerializeField]
+    private Transform AimPoint;
+
+    //UI controls
+    [Header("UI controls")]
+    [SerializeField] private GameObject PausePanel;
+    [SerializeField] private Canvas PauseCanvas, InventoryCanvas;
+    [SerializeField] private GameObject InventoryPanel;
+
+    //Player Assortment Manager
+    private PlayerInputManager playerInputManager;
+    private GameObject playerInputmNagerHolder;
+    [SerializeField]
+    private MultiplayerEventSystem eventSystem;
+    [SerializeField] private GameObject PauseFirstSelect, InventoryFirstSelect;
+
+    //PLayer Animations
+    [Header("Animations")]
+    [SerializeField]
+    private Animator playerAnimations;
+    private bool isJumping;
+    [SerializeField]
+    private List<string> AnimationBools;
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+        playerInput = GetComponent<PlayerInput>();
+    }
+
+    void Start()
+    {
+        playerInputmNagerHolder = GameObject.FindGameObjectWithTag("PlayerManager");
+        playerInputManager = playerInputmNagerHolder.GetComponent<PlayerInputManager>();
+        animator = GetComponent<Animator>();
+        rb.freezeRotation = true;
+        Cursor.lockState = CursorLockMode.Locked;
+        playerInput.defaultActionMap = "UI";
+        Cursor.lockState = CursorLockMode.None;
+
+        RunSpeed = speed * SpeedMultiplier;
+
+        PausePanel.SetActive(false);
+    }
+
+    // MOVEMENT
+    public void OnMove(InputAction.CallbackContext context)
+    {
+        Vector2 input = context.ReadValue<Vector2>();
+        moveInput = new Vector3(input.x, 0f, input.y);
+    }
+
+    //Inventory System
+    public void OnOpenInventorysystem(InputAction.CallbackContext context)
+    {
+        if (InventoryPanel.activeSelf)
+        {
+            InventoryPanel.SetActive(false);
+            speed = 5;
+        }
+        else
+        {
+            eventSystem.firstSelectedGameObject = InventoryFirstSelect;
+            eventSystem.playerRoot = InventoryCanvas.gameObject;
+            InventoryPanel.SetActive(true);
+            speed = 0;
+
+        }
+
+    }
+
+    // LOOK
+    public void OnLook(InputAction.CallbackContext context)
+    {
+        lookInput = context.ReadValue<Vector2>();
+    }
+
+
+    // Pause/Play
+    public void PauseandPlay(InputAction.CallbackContext context)
+    {
+        if (PausePanel.activeSelf)
+        {
+            PausePanel.SetActive(false);
+            Time.timeScale = 1f;
+        }
+        else
+        {
+            PausePanel.SetActive(true);
+            Time.timeScale = 0f;
+            eventSystem.playerRoot = PauseCanvas.gameObject;
+            eventSystem.firstSelectedGameObject = PauseFirstSelect;
+        }
+
+    }
+    // JUMP
+    public void OnJump(InputAction.CallbackContext context)
+    {
+        if (context.performed && IsGrounded())
+        {
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
+            PlayJump();
+        }
+    }
+
+    public void OnRun(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            speed = speed * SpeedMultiplier;
+        }
+        else if (context.canceled)
+        {
+            speed = speed / SpeedMultiplier;
+        }
+    }
+
+    public void OnAttack(InputAction.CallbackContext context)
+    {
+        
+    }
+
+    public void OnInteract(InputAction.CallbackContext context)
+    {
+        if (context.canceled)
+        {
+            Ray ray = new Ray(RayPoint.position, RayPoint.forward);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, 5f, Interact))
+            {
+                if (hit.collider.CompareTag("Weapon"))
+                {
+                    heldWeapon = hit.collider.gameObject;
+                    heldWeapon.transform.position = HoldingPosition.position;
+                    heldWeapon.transform.parent = HoldingPosition;
+                }
+            }
+        }
+    }
+
+    void CheckForInteraction()
+    {
+        Ray ray = new Ray(RayPoint.position, RayPoint.forward);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, 5f, Interact))
+        {
+            
+        }
+        else
+        {
+            if (InteractableObject != null)
+            {
+               
+            }
+        }
+    }
+    public void OnGameSelection(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+            SceneManager.LoadScene("GameSelect");
+    }
+
+    void FixedUpdate()
+    {
+        Vector3 move = rb.position + transform.TransformDirection(moveInput) * speed * Time.fixedDeltaTime;
+        rb.MovePosition(move);
+        CheckForInteraction();
+        
+    }
+
+    void LateUpdate()
+    {
+        // Horizontal rotation (player body)
+        float mouseX = lookInput.x * lookSensitivity * Time.deltaTime;
+        transform.Rotate(Vector3.up * mouseX);
+
+        // Vertical rotation (camera)
+        float mouseY = lookInput.y * lookSensitivity * Time.deltaTime;
+        xRotation -= mouseY;
+        xRotation = Mathf.Clamp(xRotation, minLookX, maxLookX);
+
+        CameraHolder.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+
+        
+        //Animations
+        if (moveInput.x > 0 || moveInput.z > 0 || moveInput.x < 0 || moveInput.z < 0)
+        {
+            if (IsGrounded())
+            {
+                if (speed == RunSpeed)
+                {
+                    PlayRun();
+                }
+                else if (speed != RunSpeed)
+                {
+                    PlayWalk();
+                }
+            }
+            else if (!IsGrounded())
+            {
+                PlayJump();
+
+            }
+        }
+        else if (moveInput.x == 0 && moveInput.z == 0)
+        {
+            if (IsGrounded())
+            {
+                PlayIdle();
+            }
+            else if (!IsGrounded())
+            {
+                PlayJump();
+
+            }
+        }
+
+    }
+
+    void PlayJump()
+    {
+        for (int i = 0; i < AnimationBools.Count; i++)
+        {
+            playerAnimations.SetBool(AnimationBools[i], false);
+        }
+        playerAnimations.SetBool(AnimationBools[2], true);
+
+    }
+
+    void PlayWalk()
+    {
+        for (int i = 0; i < AnimationBools.Count; i++)
+        {
+            playerAnimations.SetBool(AnimationBools[i], false);
+        }
+        playerAnimations.SetBool(AnimationBools[0], true);
+    }
+
+    void PlayRun()
+    {
+        for (int i = 0; i < AnimationBools.Count; i++)
+        {
+            playerAnimations.SetBool(AnimationBools[i], false);
+        }
+        playerAnimations.SetBool(AnimationBools[1], true);
+    }
+
+    void PlayIdle()
+    {
+        for (int i = 0; i < AnimationBools.Count; i++)
+        {
+            playerAnimations.SetBool(AnimationBools[i], false);
+        }
+    }
+    bool IsGrounded()
+    {
+        return Physics.Raycast(transform.position, Vector3.down, 1.1f);
+    }
+}
