@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController3D : MonoBehaviour
@@ -16,7 +17,6 @@ public class PlayerController3D : MonoBehaviour
 
     private Rigidbody rb;
     private PlayerInput playerInput;
-    private Animator animator;
 
     [Header("Movement")]
     public float speed = 5f;
@@ -24,13 +24,7 @@ public class PlayerController3D : MonoBehaviour
     public float SpeedMultiplier;
     private float RunSpeed;
     [Header("Look")]
-    public float lookSensitivity = 120f;
-    [SerializeField]
-    private Transform CameraHolder;
-    public float minLookX = -60f;
-    public float maxLookX = 60f;
 
-    private float xRotation;
 
 
     //Interactions
@@ -56,15 +50,7 @@ public class PlayerController3D : MonoBehaviour
     [SerializeField]
     private Transform AimPoint;
 
-    //UI controls
-    [Header("UI controls")]
-    [SerializeField] private GameObject PausePanel;
-    [SerializeField] private Canvas PauseCanvas, InventoryCanvas;
-    [SerializeField] private GameObject InventoryPanel;
-
     //Player Assortment Manager
-    private PlayerInputManager playerInputManager;
-    private GameObject playerInputmNagerHolder;
     [SerializeField]
     private MultiplayerEventSystem eventSystem;
     [SerializeField] private GameObject PauseFirstSelect, InventoryFirstSelect;
@@ -76,6 +62,14 @@ public class PlayerController3D : MonoBehaviour
     private bool isJumping;
     [SerializeField]
     private List<string> AnimationBools;
+    public Transform rayPoint;
+
+    [SerializeField]
+    private Color outlineColour_;
+    [SerializeField]
+    private List<Color> playerColours;
+    private GameObject currentBomb;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -84,9 +78,6 @@ public class PlayerController3D : MonoBehaviour
 
     void Start()
     {
-        playerInputmNagerHolder = GameObject.FindGameObjectWithTag("PlayerManager");
-        playerInputManager = playerInputmNagerHolder.GetComponent<PlayerInputManager>();
-        animator = GetComponent<Animator>();
         rb.freezeRotation = true;
         Cursor.lockState = CursorLockMode.Locked;
         playerInput.defaultActionMap = "UI";
@@ -94,8 +85,12 @@ public class PlayerController3D : MonoBehaviour
 
         RunSpeed = speed * SpeedMultiplier;
 
-        PausePanel.SetActive(false);
+        playerInput = GetComponent<PlayerInput>();
+        outlineColour_ = playerColours[playerInput.playerIndex];
+
     }
+
+
 
     // MOVEMENT
     public void OnMove(InputAction.CallbackContext context)
@@ -105,23 +100,11 @@ public class PlayerController3D : MonoBehaviour
     }
 
     //Inventory System
-    public void OnOpenInventorysystem(InputAction.CallbackContext context)
+    void Update()
     {
-        if (InventoryPanel.activeSelf)
-        {
-            InventoryPanel.SetActive(false);
-            speed = 5;
-        }
-        else
-        {
-            eventSystem.firstSelectedGameObject = InventoryFirstSelect;
-            eventSystem.playerRoot = InventoryCanvas.gameObject;
-            InventoryPanel.SetActive(true);
-            speed = 0;
-
-        }
 
     }
+
 
     // LOOK
     public void OnLook(InputAction.CallbackContext context)
@@ -131,29 +114,13 @@ public class PlayerController3D : MonoBehaviour
 
 
     // Pause/Play
-    public void PauseandPlay(InputAction.CallbackContext context)
-    {
-        if (PausePanel.activeSelf)
-        {
-            PausePanel.SetActive(false);
-            Time.timeScale = 1f;
-        }
-        else
-        {
-            PausePanel.SetActive(true);
-            Time.timeScale = 0f;
-            eventSystem.playerRoot = PauseCanvas.gameObject;
-            eventSystem.firstSelectedGameObject = PauseFirstSelect;
-        }
 
-    }
-    // JUMP
     public void OnJump(InputAction.CallbackContext context)
     {
         if (context.performed && IsGrounded())
         {
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
-            PlayJump();
+            //PlayJump();
         }
     }
 
@@ -171,7 +138,7 @@ public class PlayerController3D : MonoBehaviour
 
     public void OnAttack(InputAction.CallbackContext context)
     {
-        
+
     }
 
     public void OnInteract(InputAction.CallbackContext context)
@@ -195,21 +162,64 @@ public class PlayerController3D : MonoBehaviour
 
     void CheckForInteraction()
     {
-        Ray ray = new Ray(RayPoint.position, RayPoint.forward);
+        Ray ray = new Ray(rayPoint.position, rayPoint.forward);
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit, 5f, Interact))
         {
-            
+            if (hit.collider != null)
+            {
+                currentBomb = hit.collider.gameObject;
+                currentBomb.AddComponent<Outline>();
+                Outline outline = currentBomb.GetComponent<Outline>();
+                outline.OutlineWidth = 5;
+                AssignColour();
+            }
+
         }
         else
         {
-            if (InteractableObject != null)
+            if (currentBomb != null)
             {
-               
+                Outline outline = currentBomb.GetComponent<Outline>();
+                Destroy(outline);
+                currentBomb = null;
             }
         }
     }
+
+    public void AssignColour()
+    {
+
+        if (currentBomb != null)
+        {
+            Outline outline = currentBomb.gameObject.GetComponent<Outline>();
+            switch (playerInput.playerIndex)
+            {
+                case 0:
+                    outline.OutlineColor = Color.green;
+                    break;
+
+                case 1:
+                    outline.OutlineColor = Color.red;
+                    break;
+
+                case 2:
+                    outline.OutlineColor = Color.blue;
+                    break;
+
+                case 3:
+                    outline.OutlineColor = Color.yellow;
+                    break;
+
+                default:
+                    outline.OutlineColor = Color.white;
+                    break;
+            }
+        }
+    }
+
+
     public void OnGameSelection(InputAction.CallbackContext context)
     {
         if (context.performed)
@@ -218,96 +228,25 @@ public class PlayerController3D : MonoBehaviour
 
     void FixedUpdate()
     {
-        Vector3 move = rb.position + transform.TransformDirection(moveInput) * speed * Time.fixedDeltaTime;
-        rb.MovePosition(move);
+        Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.z);
+
+        // Move relative to world (NOT current rotation)
+        rb.MovePosition(rb.position + inputDir * speed * Time.fixedDeltaTime);
+
+        // Rotate ONLY when moving
+        if (inputDir.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(inputDir);
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                15f * Time.fixedDeltaTime
+            );
+        }
+
         CheckForInteraction();
-        
     }
 
-    void LateUpdate()
-    {
-        // Horizontal rotation (player body)
-        float mouseX = lookInput.x * lookSensitivity * Time.deltaTime;
-        transform.Rotate(Vector3.up * mouseX);
-
-        // Vertical rotation (camera)
-        float mouseY = lookInput.y * lookSensitivity * Time.deltaTime;
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, minLookX, maxLookX);
-
-        CameraHolder.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-
-        
-        //Animations
-        if (moveInput.x > 0 || moveInput.z > 0 || moveInput.x < 0 || moveInput.z < 0)
-        {
-            if (IsGrounded())
-            {
-                if (speed == RunSpeed)
-                {
-                    PlayRun();
-                }
-                else if (speed != RunSpeed)
-                {
-                    PlayWalk();
-                }
-            }
-            else if (!IsGrounded())
-            {
-                PlayJump();
-
-            }
-        }
-        else if (moveInput.x == 0 && moveInput.z == 0)
-        {
-            if (IsGrounded())
-            {
-                PlayIdle();
-            }
-            else if (!IsGrounded())
-            {
-                PlayJump();
-
-            }
-        }
-
-    }
-
-    void PlayJump()
-    {
-        for (int i = 0; i < AnimationBools.Count; i++)
-        {
-            playerAnimations.SetBool(AnimationBools[i], false);
-        }
-        playerAnimations.SetBool(AnimationBools[2], true);
-
-    }
-
-    void PlayWalk()
-    {
-        for (int i = 0; i < AnimationBools.Count; i++)
-        {
-            playerAnimations.SetBool(AnimationBools[i], false);
-        }
-        playerAnimations.SetBool(AnimationBools[0], true);
-    }
-
-    void PlayRun()
-    {
-        for (int i = 0; i < AnimationBools.Count; i++)
-        {
-            playerAnimations.SetBool(AnimationBools[i], false);
-        }
-        playerAnimations.SetBool(AnimationBools[1], true);
-    }
-
-    void PlayIdle()
-    {
-        for (int i = 0; i < AnimationBools.Count; i++)
-        {
-            playerAnimations.SetBool(AnimationBools[i], false);
-        }
-    }
     bool IsGrounded()
     {
         return Physics.Raycast(transform.position, Vector3.down, 1.1f);
