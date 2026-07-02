@@ -143,6 +143,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7826830067918939255}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3533025697281665639
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9028897573454584146}
+  m_Layer: 0
+  m_Name: Hold Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9028897573454584146
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3533025697281665639}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.39, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1498684102950414386}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3830909265756177589
 GameObject:
   m_ObjectHideFlags: 0
@@ -306,17 +337,15 @@ MonoBehaviour:
   speed: 5
   jumpForce: 5
   SpeedMultiplier: 0
-  lookSensitivity: 200
-  minLookX: -60
-  maxLookX: 60
   Interact:
     serializedVersion: 2
-    m_Bits: 12
+    m_Bits: 8
   RayPoint: {fileID: 0}
   isChargingWeapon: 0
   attackPower: 0
   heldWeapon: {fileID: 0}
-  HoldingPosition: {fileID: 0}
+  HoldingPosition: {fileID: 9028897573454584146}
+  HoldParent: {fileID: 1498684102950414386}
   EnemyLayer:
     serializedVersion: 2
     m_Bits: 0
@@ -409,7 +438,19 @@ MonoBehaviour:
     m_ActionId: 37de54e7-c177-4c8f-9d5a-c2b4f877b276
     m_ActionName: 'Player/Jump[/Keyboard/space]'
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 3747056950562785267}
+        m_TargetAssemblyTypeName: PlayerController3D, Assembly-CSharp
+        m_MethodName: OnInteract
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: 44c6003e-808f-4982-8539-7fb6f7d1cc13
     m_ActionName: 'Player/Carry[/Mouse/leftButton]'
   - m_PersistentCalls:
@@ -420,6 +461,22 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: ea740af8-92b4-4c3a-9f35-725afdcdee6e
     m_ActionName: 'Player/Pause[/Keyboard/escape]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 3747056950562785267}
+        m_TargetAssemblyTypeName: PlayerController3D, Assembly-CSharp
+        m_MethodName: OnThrow
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 10397f00-7800-4ca3-8cc9-7866759b0b46
+    m_ActionName: 'Player/Throw[/DualShock4GamepadHID/rightTrigger]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -435,7 +492,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1498684102950414386}
   m_Layer: 0
-  m_Name: Holding Position
+  m_Name: Holding Parent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -453,6 +510,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 9028897573454584146}
   m_Father: {fileID: 7826830067918939255}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

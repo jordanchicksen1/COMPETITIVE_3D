@@ -1,254 +1,308 @@
-using System.Collections;
-using System.Collections.Generic;
-using NUnit.Framework;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.UI;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+    using System.Collections;
+    using System.Collections.Generic;
+    using NUnit.Framework;
+    using UnityEngine;
+    using UnityEngine.EventSystems;
+    using UnityEngine.InputSystem;
+    using UnityEngine.InputSystem.UI;
+    using UnityEngine.SceneManagement;
+    using UnityEngine.UI;
 
-[RequireComponent(typeof(Rigidbody))]
-public class PlayerController3D : MonoBehaviour
-{
-    [SerializeField]
-    private Vector3 moveInput;
-    private Vector2 lookInput;
-
-    private Rigidbody rb;
-    private PlayerInput playerInput;
-
-    [Header("Movement")]
-    public float speed = 5f;
-    public float jumpForce = 5f;
-    public float SpeedMultiplier;
-    private float RunSpeed;
-    [Header("Look")]
-
-
-
-    //Interactions
-    private GameObject InteractableObject;
-    public LayerMask Interact;
-    [SerializeField]
-    private Transform RayPoint;
-
-
-    //Attack
-    [SerializeField]
-    private bool isChargingWeapon;
-    [SerializeField]
-    private float attackPower;
-    [SerializeField]
-    private GameObject heldWeapon;
-    [SerializeField]
-    private Transform HoldingPosition;
-    public LayerMask EnemyLayer;
-    [SerializeField]
-    private int AimDistance;
-    public GameObject EnemyTarget;
-    [SerializeField]
-    private Transform AimPoint;
-
-    //Player Assortment Manager
-    [SerializeField]
-    private MultiplayerEventSystem eventSystem;
-    [SerializeField] private GameObject PauseFirstSelect, InventoryFirstSelect;
-
-    //PLayer Animations
-    [Header("Animations")]
-    [SerializeField]
-    private Animator playerAnimations;
-    private bool isJumping;
-    [SerializeField]
-    private List<string> AnimationBools;
-    public Transform rayPoint;
-
-    [SerializeField]
-    private Color outlineColour_;
-    [SerializeField]
-    private List<Color> playerColours;
-    private GameObject currentBomb;
-
-    void Awake()
+    [RequireComponent(typeof(Rigidbody))]
+    public class PlayerController3D : MonoBehaviour
     {
-        rb = GetComponent<Rigidbody>();
-        playerInput = GetComponent<PlayerInput>();
-    }
+        [SerializeField]
+        private Vector3 moveInput;
+        private Vector2 lookInput;
 
-    void Start()
-    {
-        rb.freezeRotation = true;
-        Cursor.lockState = CursorLockMode.Locked;
-        playerInput.defaultActionMap = "UI";
-        Cursor.lockState = CursorLockMode.None;
+        private Rigidbody rb;
+        private PlayerInput playerInput;
 
-        RunSpeed = speed * SpeedMultiplier;
-
-        playerInput = GetComponent<PlayerInput>();
-        outlineColour_ = playerColours[playerInput.playerIndex];
-
-    }
+        [Header("Movement")]
+        public float speed = 5f;
+        public float jumpForce = 5f;
+        public float SpeedMultiplier;
+        private float RunSpeed;
+        [Header("Look")]
 
 
 
-    // MOVEMENT
-    public void OnMove(InputAction.CallbackContext context)
-    {
-        Vector2 input = context.ReadValue<Vector2>();
-        moveInput = new Vector3(input.x, 0f, input.y);
-    }
-
-    //Inventory System
-    void Update()
-    {
-
-    }
+        //Interactions
+        private GameObject InteractableObject;
+        public LayerMask Interact;
+        [SerializeField]
+        private Transform RayPoint;
 
 
-    // LOOK
-    public void OnLook(InputAction.CallbackContext context)
-    {
-        lookInput = context.ReadValue<Vector2>();
-    }
+        //Attack
+        [SerializeField]
+        private bool isChargingWeapon;
+        [SerializeField]
+        private float attackPower;
+        [SerializeField]
+        private GameObject heldWeapon;
+        [SerializeField]
+        private Transform HoldingPosition;
+        [SerializeField]
+        private Transform HoldParent;
+        public LayerMask EnemyLayer;
+        [SerializeField]
+        private int AimDistance;
+        public GameObject EnemyTarget;
+        [SerializeField]
+        private Transform AimPoint;
 
+        //Player Assortment Manager
+        [SerializeField]
+        private MultiplayerEventSystem eventSystem;
+        [SerializeField] private GameObject PauseFirstSelect, InventoryFirstSelect;
 
-    // Pause/Play
+        //PLayer Animations
+        [Header("Animations")]
+        [SerializeField]
+        private Animator playerAnimations;
+        private bool isJumping;
+        [SerializeField]
+        private List<string> AnimationBools;
+        public Transform rayPoint;
 
-    public void OnJump(InputAction.CallbackContext context)
-    {
-        if (context.performed && IsGrounded())
+        [SerializeField]
+        private Color outlineColour_;
+        [SerializeField]
+        private List<Color> playerColours;
+        private GameObject currentBomb;
+
+        void Awake()
         {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
-            //PlayJump();
+            rb = GetComponent<Rigidbody>();
+            playerInput = GetComponent<PlayerInput>();
         }
-    }
 
-    public void OnRun(InputAction.CallbackContext context)
-    {
-        if (context.performed)
+        void Start()
         {
-            speed = speed * SpeedMultiplier;
+            rb.freezeRotation = true;
+            Cursor.lockState = CursorLockMode.Locked;
+            playerInput.defaultActionMap = "UI";
+            Cursor.lockState = CursorLockMode.None;
+
+            RunSpeed = speed * SpeedMultiplier;
+
+            playerInput = GetComponent<PlayerInput>();
+            outlineColour_ = playerColours[playerInput.playerIndex];
+
         }
-        else if (context.canceled)
+
+
+
+        // MOVEMENT
+        public void OnMove(InputAction.CallbackContext context)
         {
-            speed = speed / SpeedMultiplier;
+            Vector2 input = context.ReadValue<Vector2>();
+            moveInput = new Vector3(input.x, 0f, input.y);
         }
-    }
 
-    public void OnAttack(InputAction.CallbackContext context)
-    {
-
-    }
-
-    public void OnInteract(InputAction.CallbackContext context)
-    {
-        if (context.canceled)
+        //Inventory System
+        void Update()
         {
-            Ray ray = new Ray(RayPoint.position, RayPoint.forward);
-            RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit, 5f, Interact))
+        }
+
+
+        // LOOK
+        public void OnLook(InputAction.CallbackContext context)
+        {
+            lookInput = context.ReadValue<Vector2>();
+        }
+
+
+        // Pause/Play
+
+        public void OnJump(InputAction.CallbackContext context)
+        {
+            if (context.performed && IsGrounded())
             {
-                if (hit.collider.CompareTag("Weapon"))
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
+                //PlayJump();
+            }
+        }
+
+        public void OnRun(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                speed = speed * SpeedMultiplier;
+            }
+            else if (context.canceled)
+            {
+                speed = speed / SpeedMultiplier;
+            }
+        }
+
+        public void OnAttack(InputAction.CallbackContext context)
+        {
+
+        }
+
+        public void OnInteract(InputAction.CallbackContext context)
+        {
+            if (context.canceled)
+            {
+                if (currentBomb != null)
                 {
-                    heldWeapon = hit.collider.gameObject;
+                    heldWeapon = currentBomb;
                     heldWeapon.transform.position = HoldingPosition.position;
                     heldWeapon.transform.parent = HoldingPosition;
+                    BombManager bombScript = heldWeapon.GetComponent<BombManager>();
+                    if (bombScript != null)
+                    {
+                        bombScript.canCheckCollisions = true;
+                    }
+
+                }
+            }
+        }
+
+    void CheckForInteraction()
+    {
+        float interactionRange = 2f; // Proximity range (was raycast distance)
+
+        // Find all colliders in range on the Interact layer
+        Collider[] colliders = Physics.OverlapSphere(transform.position, interactionRange, Interact);
+
+        GameObject closestBomb = null;
+        float closestDistance = float.MaxValue;
+
+        // Find the closest bomb
+        foreach (Collider collider in colliders)
+        {
+            float distance = Vector3.Distance(transform.position, collider.transform.position);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestBomb = collider.gameObject;
+            }
+        }
+
+        // Update currentBomb if it changed
+        if (closestBomb != currentBomb)
+        {
+            // Remove outline from old bomb
+            if (currentBomb != null)
+            {
+                Outline outline = currentBomb.GetComponent<Outline>();
+                if (outline != null)
+                {
+                    Destroy(outline);
+                }
+            }
+
+            // Add outline to new bomb
+            currentBomb = closestBomb;
+            if (currentBomb != null)
+            {
+                Outline currentOutline = currentBomb.GetComponent<Outline>();
+                if (currentOutline == null)
+                {
+                    currentBomb.AddComponent<Outline>();
+                    currentOutline = currentBomb.GetComponent<Outline>();
+                    currentOutline.OutlineWidth = 5;
+                    AssignColour();
                 }
             }
         }
     }
 
-    void CheckForInteraction()
-    {
-        Ray ray = new Ray(rayPoint.position, rayPoint.forward);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit, 5f, Interact))
+    public void AssignColour()
         {
-            if (hit.collider != null)
-            {
-                currentBomb = hit.collider.gameObject;
-                currentBomb.AddComponent<Outline>();
-                Outline outline = currentBomb.GetComponent<Outline>();
-                outline.OutlineWidth = 5;
-                AssignColour();
-            }
 
-        }
-        else
-        {
             if (currentBomb != null)
             {
-                Outline outline = currentBomb.GetComponent<Outline>();
-                Destroy(outline);
-                currentBomb = null;
+                Outline outline = currentBomb.gameObject.GetComponent<Outline>();
+                switch (playerInput.playerIndex)
+                {
+                    case 0:
+                        outline.OutlineColor = Color.green;
+                        break;
+
+                    case 1:
+                        outline.OutlineColor = Color.red;
+                        break;
+
+                    case 2:
+                        outline.OutlineColor = Color.blue;
+                        break;
+
+                    case 3:
+                        outline.OutlineColor = Color.yellow;
+                        break;
+
+                    default:
+                        outline.OutlineColor = Color.white;
+                        break;
+                }
             }
         }
-    }
 
-    public void AssignColour()
-    {
 
-        if (currentBomb != null)
+        public void OnGameSelection(InputAction.CallbackContext context)
         {
-            Outline outline = currentBomb.gameObject.GetComponent<Outline>();
-            switch (playerInput.playerIndex)
+            if (context.performed)
+                SceneManager.LoadScene("GameSelect");
+        }
+
+
+
+        public void OnThrow(InputAction.CallbackContext context)
+        {
+            if (context.canceled)
             {
-                case 0:
-                    outline.OutlineColor = Color.green;
-                    break;
+                if (heldWeapon != null)
+                {
+                    // Get existing rigidbody instead of adding a new one every throw
+                    Rigidbody rb = heldWeapon.GetComponent<Rigidbody>();
+                    if (rb == null)
+                    {
+                        rb = heldWeapon.AddComponent<Rigidbody>();
+                    }
 
-                case 1:
-                    outline.OutlineColor = Color.red;
-                    break;
+                    // Use Impulse for a more "thrown" feel (instant burst)
+                    rb.AddForce(transform.forward * 10f, ForceMode.Impulse);
 
-                case 2:
-                    outline.OutlineColor = Color.blue;
-                    break;
+                    BombManager bombSCript = heldWeapon.GetComponent<BombManager>();
+                    if (bombSCript != null)
+                    {
+                        bombSCript.ActivateBomb();
+                    }
 
-                case 3:
-                    outline.OutlineColor = Color.yellow;
-                    break;
-
-                default:
-                    outline.OutlineColor = Color.white;
-                    break;
+                    heldWeapon.transform.parent = null;
+                    heldWeapon = null;
+                }
             }
         }
-    }
 
-
-    public void OnGameSelection(InputAction.CallbackContext context)
-    {
-        if (context.performed)
-            SceneManager.LoadScene("GameSelect");
-    }
-
-    void FixedUpdate()
-    {
-        Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.z);
-
-        // Move relative to world (NOT current rotation)
-        rb.MovePosition(rb.position + inputDir * speed * Time.fixedDeltaTime);
-
-        // Rotate ONLY when moving
-        if (inputDir.sqrMagnitude > 0.001f)
+        void FixedUpdate()
         {
-            Quaternion targetRotation = Quaternion.LookRotation(inputDir);
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                targetRotation,
-                15f * Time.fixedDeltaTime
-            );
+            Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.z);
+
+            // Move relative to world (NOT current rotation)
+            rb.MovePosition(rb.position + inputDir * speed * Time.fixedDeltaTime);
+
+            // Rotate ONLY when moving
+            if (inputDir.sqrMagnitude > 0.001f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(inputDir);
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    targetRotation,
+                    15f * Time.fixedDeltaTime
+                );
+            }
+
+            CheckForInteraction();
         }
 
-        CheckForInteraction();
+        bool IsGrounded()
+        {
+            return Physics.Raycast(transform.position, Vector3.down, 1.1f);
+        }
     }
-
-    bool IsGrounded()
-    {
-        return Physics.Raycast(transform.position, Vector3.down, 1.1f);
-    }
-}
