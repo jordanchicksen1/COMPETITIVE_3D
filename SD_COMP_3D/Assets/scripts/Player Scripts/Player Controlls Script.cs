@@ -1,19 +1,13 @@
-using System.Collections;
 using System.Collections.Generic;
-using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController3D : MonoBehaviour
 {
     [SerializeField]
     private Vector3 moveInput;
-    private Vector2 lookInput;
 
     private Rigidbody rb;
     private PlayerInput playerInput;
@@ -22,50 +16,25 @@ public class PlayerController3D : MonoBehaviour
     public float speed = 5f;
     public float jumpForce = 5f;
     public float SpeedMultiplier;
-    private float RunSpeed;
-    [Header("Look")]
-
-
 
     //Interactions
     private GameObject InteractableObject;
     public LayerMask Interact;
     [SerializeField]
-    private Transform RayPoint;
 
 
     //Attack
-    [SerializeField]
-    private bool isChargingWeapon;
-    [SerializeField]
-    private float attackPower;
-    [SerializeField]
     private GameObject heldWeapon;
     [SerializeField]
     private Transform HoldingPosition;
     [SerializeField]
     private Transform HoldParent;
-    public LayerMask EnemyLayer;
-    [SerializeField]
-    private int AimDistance;
-    public GameObject EnemyTarget;
-    [SerializeField]
-    private Transform AimPoint;
-
-    //Player Assortment Manager
-    [SerializeField]
-    private MultiplayerEventSystem eventSystem;
-    [SerializeField] private GameObject PauseFirstSelect, InventoryFirstSelect;
 
     //PLayer Animations
     [Header("Animations")]
     [SerializeField]
-    private Animator playerAnimations;
-    [SerializeField]
     private AnimationManager animManager;
-    private bool isJumping;
     [SerializeField]
-    private List<string> AnimationBools;
     public Transform rayPoint;
 
     [SerializeField]
@@ -73,6 +42,8 @@ public class PlayerController3D : MonoBehaviour
     [SerializeField]
     private List<Color> playerColours;
     private GameObject currentBomb;
+    [SerializeField]
+    private float throwForce;
 
     void Awake()
     {
@@ -84,11 +55,7 @@ public class PlayerController3D : MonoBehaviour
     {
         rb.freezeRotation = true;
         Cursor.lockState = CursorLockMode.Locked;
-        playerInput.defaultActionMap = "UI";
         Cursor.lockState = CursorLockMode.None;
-
-        RunSpeed = speed * SpeedMultiplier;
-
         playerInput = GetComponent<PlayerInput>();
         outlineColour_ = playerColours[playerInput.playerIndex];
 
@@ -130,21 +97,18 @@ public class PlayerController3D : MonoBehaviour
         {
             animManager.PlayRun();
         }
+        else if (isHoldingWeapon && !isMoving)
+        {
+            animManager.PlayHoldIdle();
+        }
         else
         {
             animManager.PlayIdle();
+
         }
     }
 
 
-    // LOOK
-    public void OnLook(InputAction.CallbackContext context)
-    {
-        lookInput = context.ReadValue<Vector2>();
-    }
-
-
-    // Pause/Play
 
     public void OnJump(InputAction.CallbackContext context)
     {
@@ -271,13 +235,6 @@ public class PlayerController3D : MonoBehaviour
     }
 
 
-    public void OnGameSelection(InputAction.CallbackContext context)
-    {
-        if (context.performed)
-            SceneManager.LoadScene("GameSelect");
-    }
-
-
 
     public void OnThrow(InputAction.CallbackContext context)
     {
@@ -293,7 +250,7 @@ public class PlayerController3D : MonoBehaviour
                 }
 
                 // Use Impulse for a more "thrown" feel (instant burst)
-                rb.AddForce(transform.forward * 10f, ForceMode.Impulse);
+                rb.AddForce(transform.forward * throwForce, ForceMode.Impulse);
 
                 BombManager bombSCript = heldWeapon.GetComponent<BombManager>();
                 if (bombSCript != null)

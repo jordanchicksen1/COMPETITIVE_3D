@@ -50,6 +50,13 @@ public class AnimationManager : MonoBehaviour
         animator.SetBool(animationBools[2], true);
     }
 
+    public void PlayHoldIdle()
+    {
+        if (IsBusy) return;
+        ResetAllBools();
+        animator.SetBool(animationBools[5], true);
+    }
+
     public void PlayThrow()
     {
         StopAllCoroutines();
