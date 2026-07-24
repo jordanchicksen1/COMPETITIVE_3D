@@ -1,13 +1,19 @@
+using System.Collections;
 using System.Collections.Generic;
+using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController3D : MonoBehaviour
 {
     [SerializeField]
     private Vector3 moveInput;
+    private Vector2 lookInput;
 
     private Rigidbody rb;
     private PlayerInput playerInput;
@@ -16,25 +22,50 @@ public class PlayerController3D : MonoBehaviour
     public float speed = 5f;
     public float jumpForce = 5f;
     public float SpeedMultiplier;
+    private float RunSpeed;
+    [Header("Look")]
+
+
 
     //Interactions
     private GameObject InteractableObject;
     public LayerMask Interact;
     [SerializeField]
+    private Transform RayPoint;
 
 
     //Attack
+    [SerializeField]
+    private bool isChargingWeapon;
+    [SerializeField]
+    private float attackPower;
+    [SerializeField]
     private GameObject heldWeapon;
     [SerializeField]
     private Transform HoldingPosition;
     [SerializeField]
     private Transform HoldParent;
+    public LayerMask EnemyLayer;
+    [SerializeField]
+    private int AimDistance;
+    public GameObject EnemyTarget;
+    [SerializeField]
+    private Transform AimPoint;
+
+    //Player Assortment Manager
+    [SerializeField]
+    private MultiplayerEventSystem eventSystem;
+    [SerializeField] private GameObject PauseFirstSelect, InventoryFirstSelect;
 
     //PLayer Animations
     [Header("Animations")]
     [SerializeField]
-    private AnimationManager animManager;
+    private Animator playerAnimations;
     [SerializeField]
+    private AnimationManager animManager;
+    private bool isJumping;
+    [SerializeField]
+    private List<string> AnimationBools;
     public Transform rayPoint;
 
     [SerializeField]
@@ -42,20 +73,37 @@ public class PlayerController3D : MonoBehaviour
     [SerializeField]
     private List<Color> playerColours;
     private GameObject currentBomb;
+
+    [Header("Knockback")]
+    [SerializeField]
+    private float knockbackDrag = 5f; // higher = knockback fades out faster
+    private Vector3 knockbackVelocity;
     [SerializeField]
     private float throwForce;
-
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         playerInput = GetComponent<PlayerInput>();
     }
 
+    // Called by external systems (e.g. BombManager) to push the player.
+    // Needed because normal movement uses MovePosition every FixedUpdate,
+    // which would otherwise instantly cancel out any physics force applied
+    // directly to the Rigidbody (like AddExplosionForce).
+    public void ApplyKnockback(Vector3 force)
+    {
+        knockbackVelocity += force;
+    }
+
     void Start()
     {
         rb.freezeRotation = true;
         Cursor.lockState = CursorLockMode.Locked;
+        playerInput.defaultActionMap = "UI";
         Cursor.lockState = CursorLockMode.None;
+
+        RunSpeed = speed * SpeedMultiplier;
+
         playerInput = GetComponent<PlayerInput>();
         outlineColour_ = playerColours[playerInput.playerIndex];
 
@@ -97,18 +145,21 @@ public class PlayerController3D : MonoBehaviour
         {
             animManager.PlayRun();
         }
-        else if (isHoldingWeapon && !isMoving)
-        {
-            animManager.PlayHoldIdle();
-        }
         else
         {
             animManager.PlayIdle();
-
         }
     }
 
 
+    // LOOK
+    public void OnLook(InputAction.CallbackContext context)
+    {
+        lookInput = context.ReadValue<Vector2>();
+    }
+
+
+    // Pause/Play
 
     public void OnJump(InputAction.CallbackContext context)
     {
@@ -146,7 +197,9 @@ public class PlayerController3D : MonoBehaviour
                 BombManager bombScript = heldWeapon.GetComponent<BombManager>();
                 if (bombScript != null)
                 {
-                    bombScript.canCheckCollisions = true;
+                    // Collisions should NOT be armed while the bomb is being
+                    // carried, only once it's actually thrown (see OnThrow).
+                    bombScript.canCheckCollisions = false;
                 }
 
             }
@@ -235,6 +288,13 @@ public class PlayerController3D : MonoBehaviour
     }
 
 
+    public void OnGameSelection(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+            SceneManager.LoadScene("GameSelect");
+    }
+
+
 
     public void OnThrow(InputAction.CallbackContext context)
     {
@@ -250,11 +310,13 @@ public class PlayerController3D : MonoBehaviour
                 }
 
                 // Use Impulse for a more "thrown" feel (instant burst)
-                rb.AddForce(transform.forward * throwForce, ForceMode.Impulse);
+                rb.AddForce(HoldingPosition.forward * throwForce, ForceMode.Impulse);
 
                 BombManager bombSCript = heldWeapon.GetComponent<BombManager>();
                 if (bombSCript != null)
                 {
+                    // Arm collision detection now that it's actually in flight.
+                    bombSCript.canCheckCollisions = true;
                     bombSCript.ActivateBomb();
                 }
 
@@ -273,8 +335,18 @@ public class PlayerController3D : MonoBehaviour
     {
         Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.z);
 
-        // Move relative to world (NOT current rotation)
-        rb.MovePosition(rb.position + inputDir * speed * Time.fixedDeltaTime);
+        // Decay any active knockback so it fades out rather than persisting forever
+        if (knockbackVelocity.sqrMagnitude > 0.01f)
+        {
+            knockbackVelocity = Vector3.Lerp(knockbackVelocity, Vector3.zero, knockbackDrag * Time.fixedDeltaTime);
+        }
+        else
+        {
+            knockbackVelocity = Vector3.zero;
+        }
+
+        // Move relative to world (NOT current rotation), blended with any knockback
+        rb.MovePosition(rb.position + (inputDir * speed + knockbackVelocity) * Time.fixedDeltaTime);
 
         // Rotate ONLY when moving
         if (inputDir.sqrMagnitude > 0.001f)
