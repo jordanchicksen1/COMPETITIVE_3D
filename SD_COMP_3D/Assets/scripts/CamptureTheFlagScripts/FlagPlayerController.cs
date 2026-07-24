@@ -45,6 +45,29 @@ public class FlagPlayerController : MonoBehaviour
     [SerializeField]
     private float throwForce;
 
+    //Capture The Flag
+    [Header("Capture The Flag")]
+    [Tooltip("Layer the flag pickup object lives on, checked alongside Interact.")]
+    public LayerMask FlagLayer;
+    [Tooltip("Where the flag attaches while this player is carrying it.")]
+    [SerializeField]
+    private Transform FlagHoldPosition;
+    [Tooltip("Where this player respawns after dying.")]
+    public Transform SpawnPoint;
+    [Tooltip("Optional team id, used by FlagCaptureZone to tell friendly vs enemy flag.")]
+    public int TeamId = 0;
+
+    private Flag currentFlagInRange;
+    private Flag heldFlag;
+    public bool HasFlag => heldFlag != null;
+    public Flag CarriedFlag => heldFlag;
+
+    //Health / Death
+    [Header("Health")]
+    public int maxHealth = 100;
+    private int currentHealth;
+    public bool IsDead { get; private set; }
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -58,7 +81,7 @@ public class FlagPlayerController : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         playerInput = GetComponent<PlayerInput>();
         outlineColour_ = playerColours[playerInput.playerIndex];
-
+        currentHealth = maxHealth;
     }
 
 
@@ -138,7 +161,8 @@ public class FlagPlayerController : MonoBehaviour
     {
         if (context.canceled)
         {
-            if (currentBomb != null)
+            // Prefer picking up a bomb if one is in range and hands are free.
+            if (currentBomb != null && heldWeapon == null)
             {
                 heldWeapon = currentBomb;
                 heldWeapon.transform.position = HoldingPosition.position;
@@ -148,9 +172,29 @@ public class FlagPlayerController : MonoBehaviour
                 {
                     bombScript.canCheckCollisions = true;
                 }
-
+            }
+            // Otherwise, pick up the flag if one is in range and not already carried.
+            else if (currentFlagInRange != null && heldFlag == null && currentFlagInRange.State != Flag.FlagState.Carried)
+            {
+                PickUpFlag(currentFlagInRange);
             }
         }
+    }
+
+    private void PickUpFlag(Flag flag)
+    {
+        Transform holdPoint = FlagHoldPosition != null ? FlagHoldPosition : HoldingPosition;
+        flag.PickUp(holdPoint, gameObject);
+        heldFlag = flag;
+    }
+
+    // Drops the carried flag in place, e.g. if manually released without dying.
+    public void DropFlag()
+    {
+        if (heldFlag == null) return;
+
+        heldFlag.Drop(transform.position);
+        heldFlag = null;
     }
 
     void CheckForInteraction()
@@ -198,6 +242,56 @@ public class FlagPlayerController : MonoBehaviour
                     currentOutline = currentBomb.GetComponent<Outline>();
                     currentOutline.OutlineWidth = 5;
                     AssignColour();
+                }
+            }
+        }
+
+        CheckForFlagInteraction();
+    }
+
+    // Separate proximity check for the flag, on its own layer, so bombs and
+    // the flag can both be highlighted/interacted with independently.
+    void CheckForFlagInteraction()
+    {
+        float interactionRange = 2f;
+        Collider[] flagColliders = Physics.OverlapSphere(transform.position, interactionRange, FlagLayer);
+
+        GameObject closestFlagObj = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (Collider collider in flagColliders)
+        {
+            float distance = Vector3.Distance(transform.position, collider.transform.position);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestFlagObj = collider.gameObject;
+            }
+        }
+
+        Flag closestFlag = closestFlagObj != null ? closestFlagObj.GetComponent<Flag>() : null;
+
+        if (closestFlag != currentFlagInRange)
+        {
+            if (currentFlagInRange != null)
+            {
+                Outline oldOutline = currentFlagInRange.GetComponent<Outline>();
+                if (oldOutline != null)
+                {
+                    Destroy(oldOutline);
+                }
+            }
+
+            currentFlagInRange = closestFlag;
+
+            if (currentFlagInRange != null && currentFlagInRange.State != Flag.FlagState.Carried)
+            {
+                Outline newOutline = currentFlagInRange.GetComponent<Outline>();
+                if (newOutline == null)
+                {
+                    newOutline = currentFlagInRange.gameObject.AddComponent<Outline>();
+                    newOutline.OutlineWidth = 5;
+                    newOutline.OutlineColor = Color.white;
                 }
             }
         }
@@ -293,5 +387,66 @@ public class FlagPlayerController : MonoBehaviour
     bool IsGrounded()
     {
         return Physics.Raycast(transform.position, Vector3.down, 1.1f);
+    }
+
+    // --- Health / Death / Respawn -------------------------------------
+
+    // Call this from your bomb explosion / damage code (e.g. BombManager)
+    // whenever this player should take damage.
+    public void TakeDamage(int amount)
+    {
+        if (IsDead) return;
+
+        currentHealth -= amount;
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    public void Die()
+    {
+        if (IsDead) return;
+        IsDead = true;
+
+        // Flag drops right where the player died.
+        if (heldFlag != null)
+        {
+            heldFlag.Drop(transform.position);
+            heldFlag = null;
+        }
+
+        // Don't let a held bomb vanish/teleport with the player on respawn.
+        if (heldWeapon != null)
+        {
+            heldWeapon.transform.parent = null;
+            heldWeapon = null;
+        }
+
+        Respawn();
+    }
+
+    private void Respawn()
+    {
+        currentHealth = maxHealth;
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        if (SpawnPoint != null)
+        {
+            rb.position = SpawnPoint.position;
+            transform.rotation = SpawnPoint.rotation;
+        }
+
+        if (animManager != null)
+        {
+            animManager.PlayIdle();
+        }
+
+        IsDead = false;
     }
 }
