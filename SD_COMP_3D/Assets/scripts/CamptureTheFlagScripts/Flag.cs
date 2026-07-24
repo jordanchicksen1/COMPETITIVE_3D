@@ -10,9 +10,6 @@ public class Flag : MonoBehaviour
         Dropped
     }
 
-    [Tooltip("Which team this flag belongs to. Used by FlagCaptureZone to tell friendly vs enemy flag.")]
-    public int TeamId = 0;
-
     public FlagState State { get; private set; } = FlagState.AtBase;
     public GameObject CurrentCarrier { get; private set; }
 
@@ -45,8 +42,6 @@ public class Flag : MonoBehaviour
             rb.isKinematic = true;
         }
 
-        // Disabling the collider stops it from immediately re-triggering
-        // pickup logic while it's riding around on the player.
         if (col != null)
         {
             col.enabled = false;
@@ -72,8 +67,6 @@ public class Flag : MonoBehaviour
         }
     }
 
-    // Sends the flag back to its home base, e.g. after a successful capture
-    // or after a "return the flag" timeout / manual touch on a dropped flag.
     public void ReturnToBase()
     {
         State = FlagState.AtBase;

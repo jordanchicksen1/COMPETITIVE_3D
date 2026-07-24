@@ -5,6 +5,10 @@ TagManager:
   serializedVersion: 3
   tags:
   - Bomb
+  - P1Spawn
+  - P2Spawn
+  - P3Spawn
+  - P4Spawn
   layers:
   - Default
   - TransparentFX
@@ -12,7 +16,7 @@ TagManager:
   - Interact
   - Water
   - UI
-  - 
+  - FlagLayer
   - 
   - 
   - 

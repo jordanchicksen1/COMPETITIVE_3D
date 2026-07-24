@@ -3,7 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class FlagCaptureZone : MonoBehaviour
 {
-    [Tooltip("The team this base belongs to. A capture only counts if the carried flag's TeamId is different from this.")]
+    [Tooltip("The team this base/zone belongs to.")]
     public int TeamId = 0;
 
     public delegate void FlagCaptured(int scoringTeamId, GameObject scoringPlayer);
@@ -17,15 +17,14 @@ public class FlagCaptureZone : MonoBehaviour
             return;
         }
 
-        Flag carriedFlag = player.CarriedFlag;
-
-        // Only counts as a capture if it's the enemy's flag, not your own.
-        if (carriedFlag.TeamId == TeamId)
+        if (player.TeamId != TeamId)
         {
             return;
         }
 
+        Flag carriedFlag = player.CarriedFlag;
         carriedFlag.ReturnToBase();
+        player.ClearHeldFlag();
         OnFlagCaptured?.Invoke(TeamId, player.gameObject);
     }
 }

@@ -82,6 +82,30 @@ public class FlagPlayerController : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
         outlineColour_ = playerColours[playerInput.playerIndex];
         currentHealth = maxHealth;
+
+        AssignSpawnPointAndTeam();
+    }
+
+    // Assigns this player a spawn point (P1Spawn for the 1st player to join,
+    // P2Spawn for the 2nd, etc.) and a matching TeamId (1-4), based on
+    // PlayerInput.playerIndex, then places the player there.
+    private void AssignSpawnPointAndTeam()
+    {
+        // playerIndex is 0-based (first player = 0), so P1Spawn/TeamId 1 for them.
+        int joinOrder = playerInput.playerIndex + 1;
+        TeamId = joinOrder;
+
+        GameObject spawnObj = GameObject.FindWithTag($"P{joinOrder}Spawn");
+        if (spawnObj != null)
+        {
+            SpawnPoint = spawnObj.transform;
+            rb.position = SpawnPoint.position;
+            transform.rotation = SpawnPoint.rotation;
+        }
+        else
+        {
+            Debug.LogWarning($"FlagPlayerController: no object tagged 'P{joinOrder}Spawn' found in the scene.");
+        }
     }
 
 
@@ -162,7 +186,9 @@ public class FlagPlayerController : MonoBehaviour
         if (context.canceled)
         {
             // Prefer picking up a bomb if one is in range and hands are free.
-            if (currentBomb != null && heldWeapon == null)
+            // (extra GetComponent<Flag>() check is a safety net in case the
+            // flag object ever ends up on the Interact layer too)
+            if (currentBomb != null && heldWeapon == null && currentBomb.GetComponent<Flag>() == null)
             {
                 heldWeapon = currentBomb;
                 heldWeapon.transform.position = HoldingPosition.position;
@@ -197,6 +223,14 @@ public class FlagPlayerController : MonoBehaviour
         heldFlag = null;
     }
 
+    // Clears this player's held-flag reference WITHOUT touching the flag
+    // itself. Call this when something else (e.g. FlagCaptureZone) has
+    // already moved/returned the flag and just needs the player to let go.
+    public void ClearHeldFlag()
+    {
+        heldFlag = null;
+    }
+
     void CheckForInteraction()
     {
         float interactionRange = 2f; // Proximity range (was raycast distance)
@@ -207,9 +241,15 @@ public class FlagPlayerController : MonoBehaviour
         GameObject closestBomb = null;
         float closestDistance = float.MaxValue;
 
-        // Find the closest bomb
+        // Find the closest bomb (skip anything that's actually the flag,
+        // in case FlagLayer and Interact overlap on the same object)
         foreach (Collider collider in colliders)
         {
+            if (collider.GetComponent<Flag>() != null)
+            {
+                continue;
+            }
+
             float distance = Vector3.Distance(transform.position, collider.transform.position);
             if (distance < closestDistance)
             {
