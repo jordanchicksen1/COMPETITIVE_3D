@@ -55,13 +55,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3533025697281665639}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0.08350386, y: 0, z: 0, w: 0.99650747}
   m_LocalPosition: {x: 0, y: 1.39, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1498684102950414386}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -9.58, y: 0, z: 0}
 --- !u!1 &3830909265756177589
 GameObject:
   m_ObjectHideFlags: 0
@@ -229,10 +229,24 @@ MonoBehaviour:
   Interact:
     serializedVersion: 2
     m_Bits: 8
+  RayPoint: {fileID: 0}
+  isChargingWeapon: 0
+  attackPower: 0
   heldWeapon: {fileID: 0}
   HoldingPosition: {fileID: 9028897573454584146}
   HoldParent: {fileID: 1498684102950414386}
+  EnemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  AimDistance: 0
+  EnemyTarget: {fileID: 0}
+  AimPoint: {fileID: 0}
+  eventSystem: {fileID: 0}
+  PauseFirstSelect: {fileID: 0}
+  InventoryFirstSelect: {fileID: 0}
+  playerAnimations: {fileID: 0}
   animManager: {fileID: -7814428378272952730}
+  AnimationBools: []
   rayPoint: {fileID: 4305407571632970598}
   outlineColour_: {r: 0, g: 0, b: 0, a: 0}
   playerColours:
@@ -240,7 +254,8 @@ MonoBehaviour:
   - {r: 0.09210491, g: 0, b: 1, a: 0}
   - {r: 1, g: 0, b: 0, a: 0}
   - {r: 1, g: 0, b: 0.940804, a: 0}
-  throwForce: 13
+  knockbackDrag: 5
+  throwForce: 15
 --- !u!114 &8394370532064800589
 MonoBehaviour:
   m_ObjectHideFlags: 0
