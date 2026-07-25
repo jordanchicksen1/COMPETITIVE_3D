@@ -33,6 +33,10 @@ public class BombManager : MonoBehaviour
             {
                 case BombType.Sticky:
                     Rigidbody rb = GetComponent<Rigidbody>();
+                    if (collision.gameObject.CompareTag("Player"))
+                    {
+                        transform.SetParent(collision.transform);
+                    }
                     Destroy(rb);
                     StartCoroutine(StartStickyBomb());
                     break;
