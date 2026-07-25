@@ -45,6 +45,11 @@ public class FlagPlayerController : MonoBehaviour
     [SerializeField]
     private float throwForce;
 
+    [Header("Head Colour")]
+    public Renderer Head_Material_Renderer;
+    [SerializeField]
+    private List<Material> HeadMaterials;
+
     //Capture The Flag
     [Header("Capture The Flag")]
     [Tooltip("Layer the flag pickup object lives on, checked alongside Interact.")]
@@ -57,8 +62,12 @@ public class FlagPlayerController : MonoBehaviour
     [Tooltip("Optional team id, used by FlagCaptureZone to tell friendly vs enemy flag.")]
     public int TeamId = 0;
 
+    [Tooltip("Layer other players are on. Used to detect nearby flag carriers to steal from.")]
+    public LayerMask PlayerLayer;
+
     private Flag currentFlagInRange;
     private Flag heldFlag;
+    private FlagPlayerController currentStealTarget;
     public bool HasFlag => heldFlag != null;
     public Flag CarriedFlag => heldFlag;
 
@@ -82,16 +91,28 @@ public class FlagPlayerController : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
         outlineColour_ = playerColours[playerInput.playerIndex];
         currentHealth = maxHealth;
+        AssignHeadColour();
 
         AssignSpawnPointAndTeam();
     }
 
-    // Assigns this player a spawn point (P1Spawn for the 1st player to join,
-    // P2Spawn for the 2nd, etc.) and a matching TeamId (1-4), based on
-    // PlayerInput.playerIndex, then places the player there.
+    void AssignHeadColour()
+    {
+        if (Head_Material_Renderer == null || HeadMaterials == null)
+        {
+            return;
+        }
+
+        if (playerInput.playerIndex >= 0 && playerInput.playerIndex < HeadMaterials.Count)
+        {
+            Material[] materials = Head_Material_Renderer.materials;
+            materials[1] = HeadMaterials[playerInput.playerIndex];
+            Head_Material_Renderer.materials = materials;
+        }
+    }
+
     private void AssignSpawnPointAndTeam()
     {
-        // playerIndex is 0-based (first player = 0), so P1Spawn/TeamId 1 for them.
         int joinOrder = playerInput.playerIndex + 1;
         TeamId = joinOrder;
 
@@ -117,15 +138,11 @@ public class FlagPlayerController : MonoBehaviour
         moveInput = new Vector3(input.x, 0f, input.y);
     }
 
-    //Inventory System
     void Update()
     {
         UpdateMovementAnimation();
     }
 
-    // Drives Run / HoldRun / Idle every frame based on movement input and
-    // whether a bomb is currently held. Skipped while a one-shot animation
-    // (jump/throw) is playing so it doesn't get cut off early.
     private void UpdateMovementAnimation()
     {
         if (animManager == null || animManager.IsBusy)
@@ -185,9 +202,6 @@ public class FlagPlayerController : MonoBehaviour
     {
         if (context.canceled)
         {
-            // Prefer picking up a bomb if one is in range and hands are free.
-            // (extra GetComponent<Flag>() check is a safety net in case the
-            // flag object ever ends up on the Interact layer too)
             if (currentBomb != null && heldWeapon == null && currentBomb.GetComponent<Flag>() == null)
             {
                 heldWeapon = currentBomb;
@@ -199,10 +213,13 @@ public class FlagPlayerController : MonoBehaviour
                     bombScript.canCheckCollisions = true;
                 }
             }
-            // Otherwise, pick up the flag if one is in range and not already carried.
             else if (currentFlagInRange != null && heldFlag == null && currentFlagInRange.State != Flag.FlagState.Carried)
             {
                 PickUpFlag(currentFlagInRange);
+            }
+            else if (currentStealTarget != null && heldFlag == null && currentStealTarget.HasFlag)
+            {
+                StealFlagFrom(currentStealTarget);
             }
         }
     }
@@ -214,7 +231,15 @@ public class FlagPlayerController : MonoBehaviour
         heldFlag = flag;
     }
 
-    // Drops the carried flag in place, e.g. if manually released without dying.
+    private void StealFlagFrom(FlagPlayerController victim)
+    {
+        Flag stolenFlag = victim.CarriedFlag;
+        if (stolenFlag == null) return;
+
+        victim.ClearHeldFlag();
+        PickUpFlag(stolenFlag);
+    }
+
     public void DropFlag()
     {
         if (heldFlag == null) return;
@@ -223,9 +248,6 @@ public class FlagPlayerController : MonoBehaviour
         heldFlag = null;
     }
 
-    // Clears this player's held-flag reference WITHOUT touching the flag
-    // itself. Call this when something else (e.g. FlagCaptureZone) has
-    // already moved/returned the flag and just needs the player to let go.
     public void ClearHeldFlag()
     {
         heldFlag = null;
@@ -235,14 +257,11 @@ public class FlagPlayerController : MonoBehaviour
     {
         float interactionRange = 2f; // Proximity range (was raycast distance)
 
-        // Find all colliders in range on the Interact layer
         Collider[] colliders = Physics.OverlapSphere(transform.position, interactionRange, Interact);
 
         GameObject closestBomb = null;
         float closestDistance = float.MaxValue;
 
-        // Find the closest bomb (skip anything that's actually the flag,
-        // in case FlagLayer and Interact overlap on the same object)
         foreach (Collider collider in colliders)
         {
             if (collider.GetComponent<Flag>() != null)
@@ -258,10 +277,8 @@ public class FlagPlayerController : MonoBehaviour
             }
         }
 
-        // Update currentBomb if it changed
         if (closestBomb != currentBomb)
         {
-            // Remove outline from old bomb
             if (currentBomb != null)
             {
                 Outline outline = currentBomb.GetComponent<Outline>();
@@ -271,7 +288,6 @@ public class FlagPlayerController : MonoBehaviour
                 }
             }
 
-            // Add outline to new bomb
             currentBomb = closestBomb;
             if (currentBomb != null)
             {
@@ -287,10 +303,36 @@ public class FlagPlayerController : MonoBehaviour
         }
 
         CheckForFlagInteraction();
+        CheckForStealTarget();
     }
 
-    // Separate proximity check for the flag, on its own layer, so bombs and
-    // the flag can both be highlighted/interacted with independently.
+    void CheckForStealTarget()
+    {
+        float interactionRange = 2f;
+        Collider[] playerColliders = Physics.OverlapSphere(transform.position, interactionRange, PlayerLayer);
+
+        FlagPlayerController closestCarrier = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (Collider collider in playerColliders)
+        {
+            FlagPlayerController other = collider.GetComponentInParent<FlagPlayerController>();
+            if (other == null || other == this || !other.HasFlag)
+            {
+                continue;
+            }
+
+            float distance = Vector3.Distance(transform.position, collider.transform.position);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestCarrier = other;
+            }
+        }
+
+        currentStealTarget = closestCarrier;
+    }
+
     void CheckForFlagInteraction()
     {
         float interactionRange = 2f;
@@ -376,14 +418,12 @@ public class FlagPlayerController : MonoBehaviour
         {
             if (heldWeapon != null)
             {
-                // Get existing rigidbody instead of adding a new one every throw
                 Rigidbody rb = heldWeapon.GetComponent<Rigidbody>();
                 if (rb == null)
                 {
                     rb = heldWeapon.AddComponent<Rigidbody>();
                 }
 
-                // Use Impulse for a more "thrown" feel (instant burst)
                 rb.AddForce(transform.forward * throwForce, ForceMode.Impulse);
 
                 BombManager bombSCript = heldWeapon.GetComponent<BombManager>();
@@ -407,10 +447,8 @@ public class FlagPlayerController : MonoBehaviour
     {
         Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.z);
 
-        // Move relative to world (NOT current rotation)
         rb.MovePosition(rb.position + inputDir * speed * Time.fixedDeltaTime);
 
-        // Rotate ONLY when moving
         if (inputDir.sqrMagnitude > 0.001f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(inputDir);
@@ -429,10 +467,6 @@ public class FlagPlayerController : MonoBehaviour
         return Physics.Raycast(transform.position, Vector3.down, 1.1f);
     }
 
-    // --- Health / Death / Respawn -------------------------------------
-
-    // Call this from your bomb explosion / damage code (e.g. BombManager)
-    // whenever this player should take damage.
     public void TakeDamage(int amount)
     {
         if (IsDead) return;
@@ -449,14 +483,12 @@ public class FlagPlayerController : MonoBehaviour
         if (IsDead) return;
         IsDead = true;
 
-        // Flag drops right where the player died.
         if (heldFlag != null)
         {
             heldFlag.Drop(transform.position);
             heldFlag = null;
         }
 
-        // Don't let a held bomb vanish/teleport with the player on respawn.
         if (heldWeapon != null)
         {
             heldWeapon.transform.parent = null;

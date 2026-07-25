@@ -9,6 +9,7 @@ TagManager:
   - P2Spawn
   - P3Spawn
   - P4Spawn
+  - Flag
   layers:
   - Default
   - TransparentFX
@@ -17,7 +18,7 @@ TagManager:
   - Water
   - UI
   - FlagLayer
-  - 
+  - PlayerLayer
   - 
   - 
   - 
