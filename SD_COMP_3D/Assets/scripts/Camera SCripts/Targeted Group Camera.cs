@@ -12,6 +12,11 @@ public class TargetedGroupCameraManager : MonoBehaviour
     [SerializeField]
     private float defaultRadious;
 
+    private void Start()
+    {
+        
+    }
+
     private void Awake()
     {
         if (targetGroup == null)

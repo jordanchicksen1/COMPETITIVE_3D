@@ -32,6 +32,7 @@ public class AnimationManager : MonoBehaviour
     private void Start()
     {
         StartCoroutine(ChangeFacialReactions());
+
     }
     private void ResetAllBools()
     {

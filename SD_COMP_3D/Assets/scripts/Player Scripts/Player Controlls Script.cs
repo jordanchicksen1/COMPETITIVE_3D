@@ -80,6 +80,10 @@ public class PlayerController3D : MonoBehaviour
     private Vector3 knockbackVelocity;
     [SerializeField]
     private float throwForce;
+
+    public Renderer Head_Material_Renderer;
+    [SerializeField]
+    private List<Material> HeadMaterials;
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -106,7 +110,17 @@ public class PlayerController3D : MonoBehaviour
 
         playerInput = GetComponent<PlayerInput>();
         outlineColour_ = playerColours[playerInput.playerIndex];
+        AssignHeadColour();
+    }
 
+    void AssignHeadColour()
+    {
+        if (playerInput.playerIndex >= 0 && playerInput.playerIndex < HeadMaterials.Count)
+        {
+            Material[] materials = Head_Material_Renderer.materials;
+            materials[1] = HeadMaterials[playerInput.playerIndex];
+            Head_Material_Renderer.materials = materials;
+        }
     }
 
 
@@ -279,7 +293,12 @@ public class PlayerController3D : MonoBehaviour
                 case 3:
                     outline.OutlineColor = Color.yellow;
                     break;
-
+                case 4:
+                    outline.OutlineColor = Color.pink;
+                    break;
+                case 5:
+                    outline.OutlineColor = Color.orange;
+                    break;
                 default:
                     outline.OutlineColor = Color.white;
                     break;

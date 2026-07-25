@@ -257,6 +257,14 @@ MonoBehaviour:
   - {r: 1, g: 0, b: 0.940804, a: 0}
   knockbackDrag: 5
   throwForce: 15
+  Head_Material_Renderer: {fileID: 1450276808517955187}
+  HeadMaterials:
+  - {fileID: 2100000, guid: 226e85a3c3faa37429d14d5b5a8ed315, type: 2}
+  - {fileID: 2100000, guid: 3c482ff7e78f2564aae0929ceae6c9da, type: 2}
+  - {fileID: 2100000, guid: 929a1c358206c3245b86d72bf7f0996a, type: 2}
+  - {fileID: 2100000, guid: 143c724af9aae704ea7c5a960dfb8435, type: 2}
+  - {fileID: 2100000, guid: a7b4a9f3efc3c834dab43e06e9a695ac, type: 2}
+  - {fileID: 2100000, guid: 091f57d84f6ecc64a91c8beff747a326, type: 2}
 --- !u!114 &8394370532064800589
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -404,6 +412,7 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 00cdff5c71da53d4d96f14f3516de284, type: 3}
   - {fileID: 2800000, guid: 8f4227f06bd83d94291a147ca776a580, type: 3}
   - {fileID: 2800000, guid: ece852cd6124ef54bb25f55939f50662, type: 3}
+  Test: {fileID: 0}
 --- !u!114 &3279100590727229086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -811,7 +820,7 @@ PrefabInstance:
     - target: {fileID: 8417361359673230750, guid: 086241d5440ed1f47ba9f3adeebd98a9, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
       value: 
-      objectReference: {fileID: 2100000, guid: 648f9a9dcac17da46b40c11ab6e9fee9, type: 2}
+      objectReference: {fileID: 2100000, guid: a7b4a9f3efc3c834dab43e06e9a695ac, type: 2}
     - target: {fileID: 8417361359673230750, guid: 086241d5440ed1f47ba9f3adeebd98a9, type: 3}
       propertyPath: 'm_Materials.Array.data[2]'
       value: 
