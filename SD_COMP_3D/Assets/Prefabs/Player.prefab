@@ -78,6 +78,7 @@ GameObject:
   - component: {fileID: 3747056950562785267}
   - component: {fileID: 8394370532064800589}
   - component: {fileID: -7814428378272952730}
+  - component: {fileID: 3279100590727229086}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -396,6 +397,25 @@ MonoBehaviour:
   - HoldIdle
   jumpWaitTime: 0.5
   throwWaitTime: 0.5
+  face_Material_Render: {fileID: 1450276808517955187}
+  face_images:
+  - {fileID: 2800000, guid: b07a7722a3b22bc459f09e90015e5f57, type: 3}
+  - {fileID: 2800000, guid: 31fb30d2011be994eb8db2111df65e05, type: 3}
+  - {fileID: 2800000, guid: 00cdff5c71da53d4d96f14f3516de284, type: 3}
+  - {fileID: 2800000, guid: 8f4227f06bd83d94291a147ca776a580, type: 3}
+  - {fileID: 2800000, guid: ece852cd6124ef54bb25f55939f50662, type: 3}
+--- !u!114 &3279100590727229086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3830909265756177589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54236ca423c8fc84abaad1d9f6d3ee1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetGroupAutoRegister
 --- !u!1 &7109799267103014177
 GameObject:
   m_ObjectHideFlags: 0
@@ -792,6 +812,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 648f9a9dcac17da46b40c11ab6e9fee9, type: 2}
+    - target: {fileID: 8417361359673230750, guid: 086241d5440ed1f47ba9f3adeebd98a9, type: 3}
+      propertyPath: 'm_Materials.Array.data[2]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 1d0c236b88f722e4ea8ec07116a93543, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -800,6 +824,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 754135076822281842}
   m_SourcePrefab: {fileID: 100100000, guid: 086241d5440ed1f47ba9f3adeebd98a9, type: 3}
+--- !u!137 &1450276808517955187 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8417361359673230750, guid: 086241d5440ed1f47ba9f3adeebd98a9, type: 3}
+  m_PrefabInstance: {fileID: 6985103491611962349}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7456461114015108102 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 086241d5440ed1f47ba9f3adeebd98a9, type: 3}

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AnimationManager : MonoBehaviour
 {
@@ -17,10 +18,21 @@ public class AnimationManager : MonoBehaviour
     [SerializeField]
     private float throwWaitTime = 0.5f;
 
+    public Renderer face_Material_Render;
+    public List<Texture2D> face_images;
+    public Material Test;
+    private Coroutine facialReactionCoroutine;
+
+
     // True while a one-shot action animation (jump/throw) is mid-play,
     // so movement animations (Run/HoldRun/Idle) don't override it early.
     public bool IsBusy { get; private set; }
 
+
+    private void Start()
+    {
+        StartCoroutine(ChangeFacialReactions());
+    }
     private void ResetAllBools()
     {
         for (int i = 0; i < animationBools.Count; i++)
@@ -93,5 +105,34 @@ public class AnimationManager : MonoBehaviour
 
         animator.SetBool(animationBools[4], false);
         IsBusy = false;
+    }
+
+
+    public void StartFacialReactions()
+    {
+        if (facialReactionCoroutine != null)
+            StopCoroutine(facialReactionCoroutine);
+
+        facialReactionCoroutine = StartCoroutine(ChangeFacialReactions());
+    }
+
+    public void StopFacialReactions()
+    {
+        if (facialReactionCoroutine != null)
+        {
+            StopCoroutine(facialReactionCoroutine);
+            facialReactionCoroutine = null;
+        }
+    }
+
+    private IEnumerator ChangeFacialReactions()
+    {
+        Material faceMaterial = face_Material_Render.materials[2];
+
+        while (true)
+        {
+            faceMaterial.SetTexture("_BaseMap", face_images[Random.Range(0, face_images.Count)]);
+            yield return new WaitForSeconds(2f);
+        }
     }
 }
