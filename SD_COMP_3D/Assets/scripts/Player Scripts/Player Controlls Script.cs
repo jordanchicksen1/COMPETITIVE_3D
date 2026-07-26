@@ -109,7 +109,6 @@ public class PlayerController3D : MonoBehaviour
         RunSpeed = speed * SpeedMultiplier;
 
         playerInput = GetComponent<PlayerInput>();
-        outlineColour_ = playerColours[playerInput.playerIndex];
         AssignHeadColour();
     }
 
