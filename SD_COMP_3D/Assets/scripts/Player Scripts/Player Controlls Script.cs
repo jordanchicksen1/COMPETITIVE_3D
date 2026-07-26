@@ -136,6 +136,10 @@ public class PlayerController3D : MonoBehaviour
     void Update()
     {
         UpdateMovementAnimation();
+        if (heldWeapon != null)
+        {
+            heldWeapon.layer = 0;
+        }
     }
 
     // Drives Run / HoldRun / Idle every frame based on movement input and

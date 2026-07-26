@@ -23,10 +23,6 @@ public class AnimationManager : MonoBehaviour
     public Material Test;
     private Coroutine facialReactionCoroutine;
 
-    [SerializeField]
-    private PlayerHealth healthSCript;
-
-
     // True while a one-shot action animation (jump/throw) is mid-play,
     // so movement animations (Run/HoldRun/Idle) don't override it early.
     public bool IsBusy { get; private set; }
@@ -35,7 +31,6 @@ public class AnimationManager : MonoBehaviour
     private void Start()
     {
         StartCoroutine(ChangeFacialReactions());
-        healthSCript = GetComponent<PlayerHealth>();
     }
 
     private void ResetAllBools()
@@ -64,17 +59,14 @@ public class AnimationManager : MonoBehaviour
     {
         if (IsBusy) return;
         ResetAllBools();
-        if (healthSCript.health > 0)
-        {
-            animator.SetBool(animationBools[2], true);
-        }
+        animator.SetBool(animationBools[2], true);
     }
 
     public void PlayDying()
     {
-        if (IsBusy) return;
         ResetAllBools();
-        animator.SetBool(animationBools[6], true);
+        StartCoroutine(PlayDyingAnimation());
+        Debug.Log("Deeeeeeeeeeeeeeeeaaaaaaaaaaaaaaaaaad");
     }
 
     public void PlayHoldIdle()
@@ -82,10 +74,7 @@ public class AnimationManager : MonoBehaviour
         if (IsBusy) return;
         ResetAllBools();
 
-        if (healthSCript.health > 0)
-        {
-            animator.SetBool(animationBools[5], true);
-        }
+        animator.SetBool(animationBools[5], true);
     }
 
     public void PlayThrow()
@@ -110,6 +99,18 @@ public class AnimationManager : MonoBehaviour
 
         animator.SetBool(animationBools[3], false);
         IsBusy = false;
+        // Movement state (Idle/Run/HoldRun) picks back up automatically next
+        // frame via PlayerController3D's Update loop once IsBusy is false.
+    }
+
+    private IEnumerator PlayDyingAnimation()
+    {
+        IsBusy = true;
+        ResetAllBools();
+        animator.SetBool(animationBools[6], true);
+
+        yield return new WaitForSeconds(0);
+
         // Movement state (Idle/Run/HoldRun) picks back up automatically next
         // frame via PlayerController3D's Update loop once IsBusy is false.
     }

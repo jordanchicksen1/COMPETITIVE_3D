@@ -34,6 +34,8 @@ public class PlayerHealth : MonoBehaviour
 
         lastDisplayedHealth = health;
         _healthText.text = health.ToString();
+
+        SpawmPlayer();
     }
 
     public void TakeDamage(float damageAmount)
@@ -79,7 +81,7 @@ public class PlayerHealth : MonoBehaviour
 
     IEnumerator PlayerDeath()
     {
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(5);
         _healthText.text = "X";
 
         if (RegisterScript != null)
@@ -90,5 +92,13 @@ public class PlayerHealth : MonoBehaviour
         {
             Debug.LogWarning("RegisterScript not found on " + gameObject.name);
         }
+    }
+
+    public void SpawmPlayer()
+    {
+        transform.position = _managerScript.spawnPoints[_playerInput.playerIndex].position;
+        playerScript.speed = 0;
+
+        _managerScript.Players[_playerInput.playerIndex] = transform;
     }
 }
