@@ -14,6 +14,14 @@ public class TargetGroupAutoRegister : MonoBehaviour
         }
     }
 
+    public void RemovePlayer()
+    {
+        if (manager != null)
+        {
+            manager.UnRegisterTarget(transform);
+        }
+    }
+
     private void OnDestroy()
     {
         if ( manager != null )

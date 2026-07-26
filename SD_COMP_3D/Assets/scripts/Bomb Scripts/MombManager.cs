@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+
 public class BombManager : MonoBehaviour
 {
     public enum BombType { Sticky, Normal, Bounce, Timer }
@@ -11,6 +12,9 @@ public class BombManager : MonoBehaviour
     private GameObject ExplotionParticles;
     [SerializeField]
     private float fieldOfImpact, explosionForce;
+    [SerializeField]
+    private float maxDamage = 50f; // Damage at center of explosion
+
     public void ActivateBomb()
     {
         switch (bombType)
@@ -20,11 +24,13 @@ public class BombManager : MonoBehaviour
                 break;
         }
     }
+
     IEnumerator StartTimerBomb()
     {
         yield return new WaitForSeconds(3);
         Explode();
     }
+
     private void OnCollisionEnter(Collision collision)
     {
         if (canCheckCollisions)
@@ -56,38 +62,53 @@ public class BombManager : MonoBehaviour
             }
         }
     }
+
     IEnumerator StartStickyBomb()
     {
         yield return new WaitForSeconds(5);
         Explode();
     }
+
     void Explode()
     {
         Debug.Log("Boom");
         GameObject particles = Instantiate(ExplotionParticles, transform.position, Quaternion.identity);
         Collider[] colliders = Physics.OverlapSphere(transform.position, fieldOfImpact);
+
         foreach (Collider target in colliders)
         {
-            // Players move via MovePosition, so a regular physics force does
-            // nothing to them - push them through their own knockback channel instead.
+            Vector3 dir = target.transform.position - transform.position;
+            float distance = dir.magnitude;
+            float falloff = Mathf.Clamp01(1f - (distance / fieldOfImpact));
+
+            // Handle players (knockback + damage)
             PlayerController3D player = target.GetComponent<PlayerController3D>();
             if (player != null)
             {
-                Vector3 dir = target.transform.position - transform.position;
-                float distance = dir.magnitude;
-                float falloff = Mathf.Clamp01(1f - (distance / fieldOfImpact));
+                // Knockback
                 Vector3 knockback = dir.normalized * explosionForce * falloff;
-                knockback.y = 20; // keep the push horizontal; add a vertical pop here if you want a launch effect
+                knockback.y = 20f;
                 player.ApplyKnockback(knockback);
+
+                // Damage
+                PlayerHealth playerHealth = target.GetComponent<PlayerHealth>();
+                if (playerHealth != null)
+                {
+                    float damage = maxDamage * falloff;
+                    playerHealth.TakeDamage(damage);
+                }
+
                 continue;
             }
 
+            // Handle other rigidbodies (physics objects)
             Rigidbody rb = target.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 rb.AddExplosionForce(explosionForce, transform.position, fieldOfImpact);
             }
         }
+
         Destroy(particles, 3);
         Destroy(gameObject);
     }

@@ -23,6 +23,9 @@ public class AnimationManager : MonoBehaviour
     public Material Test;
     private Coroutine facialReactionCoroutine;
 
+    [SerializeField]
+    private PlayerHealth healthSCript;
+
 
     // True while a one-shot action animation (jump/throw) is mid-play,
     // so movement animations (Run/HoldRun/Idle) don't override it early.
@@ -32,8 +35,9 @@ public class AnimationManager : MonoBehaviour
     private void Start()
     {
         StartCoroutine(ChangeFacialReactions());
-
+        healthSCript = GetComponent<PlayerHealth>();
     }
+
     private void ResetAllBools()
     {
         for (int i = 0; i < animationBools.Count; i++)
@@ -60,14 +64,28 @@ public class AnimationManager : MonoBehaviour
     {
         if (IsBusy) return;
         ResetAllBools();
-        animator.SetBool(animationBools[2], true);
+        if (healthSCript.health > 0)
+        {
+            animator.SetBool(animationBools[2], true);
+        }
+    }
+
+    public void PlayDying()
+    {
+        if (IsBusy) return;
+        ResetAllBools();
+        animator.SetBool(animationBools[6], true);
     }
 
     public void PlayHoldIdle()
     {
         if (IsBusy) return;
         ResetAllBools();
-        animator.SetBool(animationBools[5], true);
+
+        if (healthSCript.health > 0)
+        {
+            animator.SetBool(animationBools[5], true);
+        }
     }
 
     public void PlayThrow()
