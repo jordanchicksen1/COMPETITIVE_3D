@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class GameMangerScript : MonoBehaviour
@@ -21,6 +22,10 @@ public class GameMangerScript : MonoBehaviour
     private List<GameObject> controlButtons;
     [SerializeField]
     private GameObject PodiumCamera;
+
+    public GameObject ConfirmPanel;
+    public GameObject ConfirmButton, Backbutton;
+    public EventSystem eventSystem;
 
     private void Start()
     {
@@ -51,12 +56,6 @@ public class GameMangerScript : MonoBehaviour
                 PlayerController3D playerScript = Players[i].GetComponent<PlayerController3D>();
                 playerScript.speed = Speed;
             }
-
-            for (int j = 0; j < controlButtons.Count; j++)
-            {
-                controlButtons[j].SetActive(false);
-                Debug.Log("Start Game");
-            }
         }
 
         PodiumCamera.SetActive(false);
@@ -68,5 +67,32 @@ public class GameMangerScript : MonoBehaviour
                 Players[r].position = midPoint[r].position;
             }
         }
+        ConfirmPanel.SetActive(false);
+        Time.timeScale = 1;
+
+    }
+
+    public void ShowConfirmPanel()
+    {
+        ConfirmPanel.SetActive(true);
+        eventSystem.SetSelectedGameObject(ConfirmButton);
+        for (int j = 0; j < controlButtons.Count; j++)
+        {
+            controlButtons[j].SetActive(false);
+        }
+        Time.timeScale = 0;
+    }
+
+    public void HideConfirmPanel()
+    {
+        ConfirmPanel.SetActive(false);
+        eventSystem.SetSelectedGameObject(Backbutton);
+
+        for (int j = 0; j < controlButtons.Count; j++)
+        {
+            controlButtons[j].SetActive(true);
+        }
+        Time.timeScale = 1;
+
     }
 }
