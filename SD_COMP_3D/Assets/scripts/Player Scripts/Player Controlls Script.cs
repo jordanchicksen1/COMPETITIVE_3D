@@ -84,6 +84,8 @@ public class PlayerController3D : MonoBehaviour
     public Renderer Head_Material_Renderer;
     [SerializeField]
     private List<Material> HeadMaterials;
+
+  
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -110,6 +112,7 @@ public class PlayerController3D : MonoBehaviour
 
         playerInput = GetComponent<PlayerInput>();
         AssignHeadColour();
+
     }
 
     void AssignHeadColour()

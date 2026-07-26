@@ -27,6 +27,7 @@ public class GameMangerScript : MonoBehaviour
     public GameObject ConfirmButton, Backbutton;
     public EventSystem eventSystem;
 
+
     private void Start()
     {
         playerInputManager = FindFirstObjectByType<PlayerInputManager>();
@@ -69,6 +70,7 @@ public class GameMangerScript : MonoBehaviour
         }
         ConfirmPanel.SetActive(false);
         Time.timeScale = 1;
+        playerInputManager.DisableJoining();
 
     }
 
