@@ -142,6 +142,7 @@ GameObject:
   - component: {fileID: 4701942436574162636}
   - component: {fileID: 4050612383853938001}
   - component: {fileID: 6200937187111791437}
+  - component: {fileID: 3165683581313396046}
   m_Layer: 7
   m_Name: FlagPlayer
   m_TagString: Player
@@ -474,6 +475,18 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   maxHealth: 100
+--- !u!114 &3165683581313396046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5914797336490176739}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54236ca423c8fc84abaad1d9f6d3ee1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetGroupAutoRegister
 --- !u!1001 &3281080026018528399
 PrefabInstance:
   m_ObjectHideFlags: 0
