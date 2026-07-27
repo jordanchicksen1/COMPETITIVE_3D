@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class BombManager : MonoBehaviour
 {
-    public enum BombType { Sticky, Normal, Bounce, Timer }
+    public enum BombType { Sticky, Normal, Bounce, Timer, falling }
     [SerializeField] private BombType bombType;
     [SerializeField]
     private int bounceCount;
@@ -15,6 +15,36 @@ public class BombManager : MonoBehaviour
     [SerializeField]
     private float maxDamage = 50f; // Damage at center of explosion
 
+    [SerializeField]
+    private GameObject WarningLine;
+    private GameObject _spawnedWarning;
+    private void Start()
+    {
+        switch (bombType)
+        {
+            case BombType.falling:
+                SpawnAtRaycastHit();
+                break;
+
+        }
+
+
+    }
+    void SpawnAtRaycastHit()
+    {
+
+        RaycastHit hit;
+        Vector3 rayOrigin = transform.position;
+        Vector3 rayDirection = Vector3.down;
+        float rayDistance = 100f;
+
+        if (Physics.Raycast(rayOrigin, rayDirection, out hit, rayDistance))
+        {
+            _spawnedWarning = Instantiate(WarningLine, hit.point, Quaternion.identity);
+
+            Debug.Log($"Hit {hit.collider.gameObject.name} at {hit.point}");
+        }
+    }
     public void ActivateBomb()
     {
         switch (bombType)
@@ -47,6 +77,9 @@ public class BombManager : MonoBehaviour
                     StartCoroutine(StartStickyBomb());
                     break;
                 case BombType.Normal:
+                    Explode();
+                    break;
+                case BombType.falling:
                     Explode();
                     break;
                 case BombType.Bounce:
@@ -110,6 +143,7 @@ public class BombManager : MonoBehaviour
         }
 
         Destroy(particles, 3);
+        Destroy(_spawnedWarning);
         Destroy(gameObject);
     }
 }

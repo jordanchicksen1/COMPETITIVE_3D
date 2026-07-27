@@ -27,6 +27,7 @@ public class GameMangerScript : MonoBehaviour
     public GameObject ConfirmButton, Backbutton;
     public EventSystem eventSystem;
 
+    public BombSpawner _bombSpawner;
 
     private void Start()
     {
@@ -71,6 +72,8 @@ public class GameMangerScript : MonoBehaviour
         ConfirmPanel.SetActive(false);
         Time.timeScale = 1;
         playerInputManager.DisableJoining();
+
+        _bombSpawner.StartSpawning();
 
     }
 
