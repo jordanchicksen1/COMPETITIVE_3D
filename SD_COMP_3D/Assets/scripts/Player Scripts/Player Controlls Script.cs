@@ -165,6 +165,11 @@ public class PlayerController3D : MonoBehaviour
         {
             animManager.PlayRun();
         }
+        else if (isHoldingWeapon && !isMoving)
+        {
+            animManager.PlayHoldIdle();
+
+        }
         else
         {
             animManager.PlayIdle();
