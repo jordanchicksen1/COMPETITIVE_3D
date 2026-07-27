@@ -48,7 +48,7 @@ public class BombSpawner : MonoBehaviour
 
         for (int i = 0; i < numberofBombsToSpawn; i++)
         {
-            Instantiate(fallingBomb, new Vector3(Random.Range(-23, 23), 50,  Random.Range(-23, 25)), Quaternion.identity);
+            Instantiate(fallingBomb, new Vector3(Random.Range(-23, 23), 80,  Random.Range(-23, 25)), Quaternion.identity);
         }
 
         StartCoroutine(SpawnFallingBombs());

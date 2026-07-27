@@ -101,4 +101,13 @@ public class PlayerHealth : MonoBehaviour
 
         _managerScript.Players[_playerInput.playerIndex] = transform;
     }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("KillBox"))
+        {
+            Die();
+            PlayerDeath();
+        }
+    }
 }

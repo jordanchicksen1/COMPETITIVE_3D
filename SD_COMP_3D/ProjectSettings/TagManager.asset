@@ -10,6 +10,7 @@ TagManager:
   - P3Spawn
   - P4Spawn
   - Flag
+  - KillBox
   layers:
   - Default
   - TransparentFX
