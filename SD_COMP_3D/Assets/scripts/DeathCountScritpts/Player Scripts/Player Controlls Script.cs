@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerController3D : MonoBehaviour
+public class PlayerControllerDeathMatch : MonoBehaviour
 {
     [SerializeField]
     private Vector3 moveInput;

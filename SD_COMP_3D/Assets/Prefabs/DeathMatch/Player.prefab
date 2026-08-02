@@ -459,7 +459,7 @@ GameObject:
   - component: {fileID: 1397856477252990216}
   - component: {fileID: 7176969232059261664}
   - component: {fileID: 7705855369583285762}
-  - component: {fileID: 3747056950562785267}
+  - component: {fileID: 5487774211172880404}
   - component: {fileID: 8394370532064800589}
   - component: {fileID: -7814428378272952730}
   - component: {fileID: 3279100590727229086}
@@ -595,7 +595,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &3747056950562785267
+--- !u!114 &5487774211172880404
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -604,9 +604,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 3830909265756177589}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d1dfe3686ce60e4f95e7a64816d8bbe, type: 3}
+  m_Script: {fileID: 11500000, guid: 33e6b30808b7eef49b4348e2de89e161, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerController3D
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerControllerDeathMatch
   moveInput: {x: 0, y: 0, z: 0}
   speed: 5
   jumpForce: 5
@@ -618,7 +618,7 @@ MonoBehaviour:
   isChargingWeapon: 0
   attackPower: 0
   heldWeapon: {fileID: 0}
-  HoldingPosition: {fileID: 9028897573454584146}
+  HoldingPosition: {fileID: 4305407571632970598}
   HoldParent: {fileID: 1498684102950414386}
   EnemyLayer:
     serializedVersion: 2
@@ -672,7 +672,7 @@ MonoBehaviour:
   m_ActionEvents:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3747056950562785267}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: PlayerController3D, Assembly-CSharp
         m_MethodName: OnMove
         m_Mode: 0
@@ -688,7 +688,7 @@ MonoBehaviour:
     m_ActionName: 'Player/Movement[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d,/Keyboard/upArrow,/Keyboard/downArrow,/Keyboard/leftArrow,/Keyboard/rightArrow]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3747056950562785267}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: PlayerController3D, Assembly-CSharp
         m_MethodName: OnLook
         m_Mode: 0
@@ -704,7 +704,7 @@ MonoBehaviour:
     m_ActionName: 'Player/Look Around[/Mouse/delta]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3747056950562785267}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: PlayerController3D, Assembly-CSharp
         m_MethodName: OnJump
         m_Mode: 0
@@ -720,7 +720,7 @@ MonoBehaviour:
     m_ActionName: 'Player/Jump[/Keyboard/space]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3747056950562785267}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: PlayerController3D, Assembly-CSharp
         m_MethodName: OnInteract
         m_Mode: 0
@@ -744,7 +744,7 @@ MonoBehaviour:
     m_ActionName: 'Player/Pause[/Keyboard/escape]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3747056950562785267}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: PlayerController3D, Assembly-CSharp
         m_MethodName: OnThrow
         m_Mode: 0
@@ -761,7 +761,7 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls: []
     m_ActionId: e52182c7-b2f3-4545-a13f-c5312f0d408a
-    m_ActionName: 'Player/Dash[/DualShock4GamepadHID/rightShoulder]'
+    m_ActionName: Player/Dash
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -822,12 +822,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8541f6e3c47c25e45a0b1c6cbecad75d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
-  health: 100
+  health: 30
   _healthText: {fileID: 0}
   animationScript: {fileID: 0}
   playerScript: {fileID: 0}
   RegisterScript: {fileID: 0}
-  gameType: 1
+  gameType: 0
 --- !u!1 &4058100329936773299
 GameObject:
   m_ObjectHideFlags: 0

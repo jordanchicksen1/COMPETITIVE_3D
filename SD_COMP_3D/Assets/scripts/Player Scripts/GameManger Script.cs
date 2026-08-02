@@ -15,7 +15,7 @@ public class GameMangerScript : MonoBehaviour
     public List<Transform> spawnPoints;
     public List<Transform> Players;
     [SerializeField]
-    private List<Transform> midPoint;
+    public List<Transform> midPoint;
     [SerializeField]
     private int Speed;
     [SerializeField]
