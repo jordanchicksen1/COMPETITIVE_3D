@@ -42,8 +42,6 @@ public class ScoreboardUi : MonoBehaviour
             Debug.LogWarning("ScoreboardUI: no PlayerInputManager found in the scene.");
         }
 
-        // Catch any players that already joined/spawned before this UI
-        // became active.
         FlagPlayerController[] existingPlayers = FindObjectsOfType<FlagPlayerController>();
         foreach (FlagPlayerController player in existingPlayers)
         {

@@ -13,6 +13,12 @@ public class Flag : MonoBehaviour
     public FlagState State { get; private set; } = FlagState.AtBase;
     public GameObject CurrentCarrier { get; private set; }
 
+    [Tooltip("How long after being picked up/stolen this flag is immune to being stolen again. Stops instant ping-pong steals between two nearby players.")]
+    public float stealProtectionDuration = 1.5f;
+    private float pickedUpAtTime = -999f;
+
+    public bool IsProtectedFromSteal => Time.time - pickedUpAtTime < stealProtectionDuration;
+
     private Vector3 basePosition;
     private Quaternion baseRotation;
     private Rigidbody rb;
@@ -30,6 +36,7 @@ public class Flag : MonoBehaviour
     {
         State = FlagState.Carried;
         CurrentCarrier = carrier;
+        pickedUpAtTime = Time.time;
 
         transform.SetParent(holdPoint, false);
         transform.localPosition = Vector3.zero;

@@ -17,6 +17,19 @@ public class FlagPlayerController : MonoBehaviour
     public float jumpForce = 5f;
     public float SpeedMultiplier;
 
+    [Header("Dash")]
+    [Tooltip("How fast the player moves during a dash.")]
+    public float dashSpeed = 20f;
+    [Tooltip("How long the dash burst lasts, in seconds.")]
+    public float dashDuration = 0.15f;
+    [Tooltip("Time between dashes, in seconds.")]
+    public float dashCooldown = 1.5f;
+
+    private bool isDashing;
+    private float dashTimeRemaining;
+    private float dashCooldownRemaining;
+    private Vector3 dashDirection;
+
     //Interactions
     private GameObject InteractableObject;
     public LayerMask Interact;
@@ -98,11 +111,6 @@ public class FlagPlayerController : MonoBehaviour
 
     void AssignHeadColour()
     {
-        if (Head_Material_Renderer == null || HeadMaterials == null)
-        {
-            return;
-        }
-
         if (playerInput.playerIndex >= 0 && playerInput.playerIndex < HeadMaterials.Count)
         {
             Material[] materials = Head_Material_Renderer.materials;
@@ -141,6 +149,11 @@ public class FlagPlayerController : MonoBehaviour
     void Update()
     {
         UpdateMovementAnimation();
+
+        if (dashCooldownRemaining > 0f)
+        {
+            dashCooldownRemaining -= Time.deltaTime;
+        }
     }
 
     private void UpdateMovementAnimation()
@@ -198,6 +211,19 @@ public class FlagPlayerController : MonoBehaviour
         }
     }
 
+    public void OnDash(InputAction.CallbackContext context)
+    {
+        if (!context.performed) return;
+        if (isDashing || dashCooldownRemaining > 0f) return;
+
+        Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.z);
+        dashDirection = inputDir.sqrMagnitude > 0.001f ? inputDir.normalized : transform.forward;
+
+        isDashing = true;
+        dashTimeRemaining = dashDuration;
+        dashCooldownRemaining = dashCooldown;
+    }
+
     public void OnInteract(InputAction.CallbackContext context)
     {
         if (context.canceled)
@@ -236,6 +262,8 @@ public class FlagPlayerController : MonoBehaviour
         Flag stolenFlag = victim.CarriedFlag;
         if (stolenFlag == null) return;
 
+        if (stolenFlag.IsProtectedFromSteal) return;
+
         victim.ClearHeldFlag();
         PickUpFlag(stolenFlag);
     }
@@ -255,7 +283,7 @@ public class FlagPlayerController : MonoBehaviour
 
     void CheckForInteraction()
     {
-        float interactionRange = 2f; // Proximity range (was raycast distance)
+        float interactionRange = 2f;
 
         Collider[] colliders = Physics.OverlapSphere(transform.position, interactionRange, Interact);
 
@@ -445,6 +473,20 @@ public class FlagPlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isDashing)
+        {
+            rb.MovePosition(rb.position + dashDirection * dashSpeed * Time.fixedDeltaTime);
+
+            dashTimeRemaining -= Time.fixedDeltaTime;
+            if (dashTimeRemaining <= 0f)
+            {
+                isDashing = false;
+            }
+
+            CheckForInteraction();
+            return;
+        }
+
         Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.z);
 
         rb.MovePosition(rb.position + inputDir * speed * Time.fixedDeltaTime);

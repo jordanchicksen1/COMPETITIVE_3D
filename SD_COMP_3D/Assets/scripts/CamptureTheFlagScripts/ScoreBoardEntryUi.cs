@@ -1,7 +1,6 @@
 using UnityEngine;
 using TMPro;
 
-
 public class ScoreboardEntryUi : MonoBehaviour
 {
     [SerializeField] private TMP_Text playerLabel;
