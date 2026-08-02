@@ -10,6 +10,7 @@ public class PlayerHealth : MonoBehaviour
 
     [SerializeField]
     private TextMeshProUGUI _healthText;
+    private TextMeshProUGUI _PointsText;
     private PlayerInput _playerInput;
     private GameMangerScript _managerScript;
 
@@ -23,11 +24,24 @@ public class PlayerHealth : MonoBehaviour
     private bool isDead = false;
     private float lastDisplayedHealth = -1;
 
+
+    public enum GameType { DeathMatch, KingOfTheLedge }
+    [SerializeField] private GameType gameType;
+
+
     private void Start()
     {
         _managerScript = FindFirstObjectByType<GameMangerScript>();
         _playerInput = GetComponent<PlayerInput>();
-        _healthText = _managerScript.HealthText[_playerInput.playerIndex];
+        switch(gameType)
+        {
+            case GameType.DeathMatch:
+                _PointsText = _managerScript.HealthText[_playerInput.playerIndex];
+                break;
+            case GameType.KingOfTheLedge:
+                _healthText = _managerScript.HealthText[_playerInput.playerIndex];
+                break;
+        }
         RegisterScript = GetComponent<TargetGroupAutoRegister>();
         animationScript = GetComponent<AnimationManager>();
         playerScript = GetComponent<PlayerController3D>();
@@ -56,26 +70,56 @@ public class PlayerHealth : MonoBehaviour
 
     private void Die()
     {
-        isDead = true;
-        Debug.Log($"{gameObject.name} died!");
+        switch (gameType)
+        {
+            case GameType.DeathMatch:
+                _playerInput.enabled = false;
+                StartCoroutine(RespawnTimer());
 
-        // Disable player input so they can't move/jump/throw
-        _playerInput.enabled = false;
+                break;
 
-        // Stop animations
-        animationScript.StopFacialReactions();
-        animationScript.PlayDying();
+            case GameType.KingOfTheLedge:
+                isDead = true;
+                Debug.Log($"{gameObject.name} died!");
 
-        StartCoroutine(PlayerDeath());
+                // Disable player input so they can't move/jump/throw
+                _playerInput.enabled = false;
+
+                // Stop animations
+                animationScript.StopFacialReactions();
+                animationScript.PlayDying();
+
+                StartCoroutine(PlayerDeath());
+                break;
+        }
+    }
+
+    IEnumerator RespawnTimer()
+    {
+        yield return new WaitForSeconds(3);
+        Respawn();
+    }
+
+    public void Respawn()
+    {
+        animationScript.PlayIdle();
+        _playerInput.enabled = true;
+        transform.position = _managerScript.midPoint[Random.Range(0, _managerScript.midPoint.Count)].position;
+
     }
 
     private void Update()
     {
-        // Only update text if health changed
-        if (health != lastDisplayedHealth)
+        switch(gameType)
         {
-            _healthText.text = health.ToString();
-            lastDisplayedHealth = health;
+            case GameType.KingOfTheLedge:
+                // Only update text if health changed
+                if (health != lastDisplayedHealth)
+                {
+                    _healthText.text = health.ToString();
+                    lastDisplayedHealth = health;
+                }
+                break;
         }
     }
 
