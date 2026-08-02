@@ -28,7 +28,7 @@ public class BombSpawner : MonoBehaviour
         for (int i = 0; i < BombPoints.Count; i++)
         {
             // Check if this spawn point has no children
-            if (BombPoints[i].transform.childCount == 0)
+            if (BombPoints[i].transform.childCount == 1)
             {
                 GameObject bomb = Instantiate(
                     Bombs[Random.Range(0, Bombs.Count)],
@@ -39,7 +39,7 @@ public class BombSpawner : MonoBehaviour
             }
         }
 
-        yield return new WaitForSeconds(20);
+        yield return new WaitForSeconds(10);
         StartCoroutine(SpawnBombs());
     }
     IEnumerator SpawnFallingBombs()
