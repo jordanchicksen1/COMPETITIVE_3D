@@ -29,6 +29,9 @@ public class GameMangerScript : MonoBehaviour
 
     public BombSpawner _bombSpawner;
 
+    public enum GameType { DeathMatch, KingOfTheLedge }
+    [SerializeField] private GameType gameType;
+
     private void Start()
     {
         playerInputManager = FindFirstObjectByType<PlayerInputManager>();
@@ -50,14 +53,30 @@ public class GameMangerScript : MonoBehaviour
 
     public void StartGame()
     {
-        for (int i = 0; i < Players.Count; i++)
+       switch(gameType)
         {
+            case GameType.DeathMatch:
+                for (int i = 0; i < Players.Count; i++)
+                {
 
-            if (Players[i] != null)
-            {
-                PlayerController3D playerScript = Players[i].GetComponent<PlayerController3D>();
-                playerScript.speed = Speed;
-            }
+                    if (Players[i] != null)
+                    {
+                        PlayerControllerDeathMatch playerScript = Players[i].GetComponent<PlayerControllerDeathMatch>();
+                        playerScript.speed = Speed;
+                    }
+                }
+                break;
+            case GameType.KingOfTheLedge:
+                for (int i = 0; i < Players.Count; i++)
+                {
+
+                    if (Players[i] != null)
+                    {
+                        PlayerController3D playerScript = Players[i].GetComponent<PlayerController3D>();
+                        playerScript.speed = Speed;
+                    }
+                }
+                break;
         }
 
         PodiumCamera.SetActive(false);

@@ -91,10 +91,7 @@ public class PlayerControllerDeathMatch : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
     }
 
-    // Called by external systems (e.g. BombManager) to push the player.
-    // Needed because normal movement uses MovePosition every FixedUpdate,
-    // which would otherwise instantly cancel out any physics force applied
-    // directly to the Rigidbody (like AddExplosionForce).
+   
     public void ApplyKnockback(Vector3 force)
     {
         knockbackVelocity += force;
@@ -224,6 +221,7 @@ public class PlayerControllerDeathMatch : MonoBehaviour
                     // Collisions should NOT be armed while the bomb is being
                     // carried, only once it's actually thrown (see OnThrow).
                     bombScript.canCheckCollisions = false;
+                    bombScript.AssignPlayerHealthScript(gameObject);
                 }
 
             }
