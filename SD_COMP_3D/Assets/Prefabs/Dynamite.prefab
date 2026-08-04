@@ -169,7 +169,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.26
+      scalar: 0.11
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -4905,6 +4905,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Dynamite
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: d382aa6c7c3657c4eb507eff4d36fce1, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -4918,9 +4922,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d382aa6c7c3657c4eb507eff4d36fce1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7773881641378537788}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d382aa6c7c3657c4eb507eff4d36fce1, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7235772507284966861}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d382aa6c7c3657c4eb507eff4d36fce1, type: 3}
       insertIndex: -1
       addedObject: {fileID: -3406783977526735906}
@@ -4947,14 +4948,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26ba8929ce5f0594396ce90c69749e46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BombManager
-  bombType: 4
+  bombType: 3
   bounceCount: 0
-  canCheckCollisions: 1
+  canCheckCollisions: 0
   ExplotionParticles: {fileID: 8225942077152798551, guid: 505a06483cb19f545a159e82c1d61150, type: 3}
   fieldOfImpact: 10
   explosionForce: 70
   maxDamage: 50
   WarningLine: {fileID: 9114652001947959515, guid: e4cc45163adf45544b41df7adcc14c4e, type: 3}
+  gameType: 1
 --- !u!95 &7773881641378537788
 Animator:
   serializedVersion: 7
@@ -4977,33 +4979,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!54 &7235772507284966861
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7606565027849011841}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!64 &-3406783977526735906
 MeshCollider:
   m_ObjectHideFlags: 0

@@ -2436,37 +2436,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 3048851310703494, guid: 036d30d7528c29746991347dc90cc929, type: 3}
---- !u!1 &457088985
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 457088986}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &457088986
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 457088985}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.93708, y: 1.03375, z: 9.40144}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &467741085
 GameObject:
   m_ObjectHideFlags: 0
@@ -3839,7 +3808,7 @@ MonoBehaviour:
       m_SingletonActionBindings: []
       m_Flags: 0
     m_Reference: {fileID: 0}
-  m_PlayerPrefab: {fileID: 3830909265756177589, guid: 62e924d2699e86144a3adb17c296e22a, type: 3}
+  m_PlayerPrefab: {fileID: 3830909265756177589, guid: 525b4d6e2897a31478b803a4825ec2fa, type: 3}
   m_SplitScreen: 0
   m_MaintainAspectRatioInSplitScreen: 0
   m_FixedNumberOfSplitScreens: -1
@@ -4053,9 +4022,9 @@ MonoBehaviour:
   Bombs:
   - {fileID: 4006751792715375411, guid: 678d985a6ff1f2842877aefe39367e1a, type: 3}
   - {fileID: 3650984632843528208, guid: 3b69b9a7411d5fd478101b8098a14c26, type: 3}
-  - {fileID: 1696640063208955559, guid: b43aad77c91e09d4f8d2d93029a79399, type: 3}
+  - {fileID: 7606565027849011841, guid: 0bde69377c232314db6083492ec7bf10, type: 3}
   - {fileID: 3378870859590697751, guid: bfb7e70777148484680d6f78d70d1de0, type: 3}
-  fallingBomb: {fileID: 7606565027849011841, guid: 0bde69377c232314db6083492ec7bf10, type: 3}
+  fallingBomb: {fileID: 1696640063208955559, guid: b43aad77c91e09d4f8d2d93029a79399, type: 3}
   fallingMaxWaitTime: 20
   numberofBombsToSpawn: 2
 --- !u!1 &983647343 stripped
@@ -5855,6 +5824,7 @@ MonoBehaviour:
   Backbutton: {fileID: 1494636606}
   eventSystem: {fileID: 1870904538}
   _bombSpawner: {fileID: 982867933}
+  gameType: 0
 --- !u!4 &1311826446
 Transform:
   m_ObjectHideFlags: 0
@@ -9554,7 +9524,6 @@ SceneRoots:
   - {fileID: 832575519}
   - {fileID: 920823539}
   - {fileID: 1226545899}
-  - {fileID: 457088986}
   - {fileID: 423860005}
   - {fileID: 1870904539}
   - {fileID: 1311826446}

@@ -11,6 +11,7 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI _healthText;
     private TextMeshProUGUI _PointsText;
+    public int _playerPoints;
     private PlayerInput _playerInput;
     private GameMangerScript _managerScript;
 
@@ -18,6 +19,7 @@ public class PlayerHealth : MonoBehaviour
     private AnimationManager animationScript;
     [SerializeField]
     private PlayerController3D playerScript;
+    private PlayerControllerDeathMatch deathmatchScript;
     [SerializeField]
     private TargetGroupAutoRegister RegisterScript;
 
@@ -33,21 +35,24 @@ public class PlayerHealth : MonoBehaviour
     {
         _managerScript = FindFirstObjectByType<GameMangerScript>();
         _playerInput = GetComponent<PlayerInput>();
-        switch(gameType)
+        switch (gameType)
         {
             case GameType.DeathMatch:
                 _PointsText = _managerScript.HealthText[_playerInput.playerIndex];
+                deathmatchScript = GetComponent<PlayerControllerDeathMatch>();
+                _PointsText.text = _playerPoints.ToString();
                 break;
             case GameType.KingOfTheLedge:
                 _healthText = _managerScript.HealthText[_playerInput.playerIndex];
+                _healthText.text = health.ToString();
+                playerScript = GetComponent<PlayerController3D>();
                 break;
         }
         RegisterScript = GetComponent<TargetGroupAutoRegister>();
         animationScript = GetComponent<AnimationManager>();
-        playerScript = GetComponent<PlayerController3D>();
+
 
         lastDisplayedHealth = health;
-        _healthText.text = health.ToString();
 
         SpawmPlayer();
     }
@@ -68,14 +73,14 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-    private void Die()
+    public void Die()
     {
         switch (gameType)
         {
             case GameType.DeathMatch:
                 _playerInput.enabled = false;
                 StartCoroutine(RespawnTimer());
-
+                animationScript.PlayDying();
                 break;
 
             case GameType.KingOfTheLedge:
@@ -96,21 +101,26 @@ public class PlayerHealth : MonoBehaviour
 
     IEnumerator RespawnTimer()
     {
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(4);
+        _playerInput.enabled = true;
         Respawn();
     }
 
     public void Respawn()
     {
-        animationScript.PlayIdle();
+        isDead = false;
+        health = maxHealth;
+
         _playerInput.enabled = true;
+        deathmatchScript.speed = 5f; // or whatever your default speed is
         transform.position = _managerScript.midPoint[Random.Range(0, _managerScript.midPoint.Count)].position;
 
+        animationScript.PlayIdle();
     }
 
     private void Update()
     {
-        switch(gameType)
+        switch (gameType)
         {
             case GameType.KingOfTheLedge:
                 // Only update text if health changed
@@ -140,10 +150,21 @@ public class PlayerHealth : MonoBehaviour
 
     public void SpawmPlayer()
     {
-        transform.position = _managerScript.spawnPoints[_playerInput.playerIndex].position;
-        playerScript.speed = 0;
+        switch (gameType)
+        {
+            case GameType.DeathMatch:
+                transform.position = _managerScript.spawnPoints[_playerInput.playerIndex].position;
+                deathmatchScript.speed = 0;
 
-        _managerScript.Players[_playerInput.playerIndex] = transform;
+                _managerScript.Players[_playerInput.playerIndex] = transform;
+                break;
+            case GameType.KingOfTheLedge:
+                transform.position = _managerScript.spawnPoints[_playerInput.playerIndex].position;
+                playerScript.speed = 0;
+
+                _managerScript.Players[_playerInput.playerIndex] = transform;
+                break;
+        }
     }
 
     private void OnCollisionEnter(Collision collision)

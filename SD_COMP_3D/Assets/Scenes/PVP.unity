@@ -4053,9 +4053,9 @@ MonoBehaviour:
   Bombs:
   - {fileID: 4006751792715375411, guid: 678d985a6ff1f2842877aefe39367e1a, type: 3}
   - {fileID: 3650984632843528208, guid: 3b69b9a7411d5fd478101b8098a14c26, type: 3}
-  - {fileID: 1696640063208955559, guid: b43aad77c91e09d4f8d2d93029a79399, type: 3}
+  - {fileID: 7606565027849011841, guid: 0bde69377c232314db6083492ec7bf10, type: 3}
   - {fileID: 3378870859590697751, guid: bfb7e70777148484680d6f78d70d1de0, type: 3}
-  fallingBomb: {fileID: 7606565027849011841, guid: 0bde69377c232314db6083492ec7bf10, type: 3}
+  fallingBomb: {fileID: 1696640063208955559, guid: b43aad77c91e09d4f8d2d93029a79399, type: 3}
   fallingMaxWaitTime: 20
   numberofBombsToSpawn: 2
 --- !u!1 &983647343 stripped
@@ -5855,6 +5855,7 @@ MonoBehaviour:
   Backbutton: {fileID: 1494636606}
   eventSystem: {fileID: 1870904538}
   _bombSpawner: {fileID: 982867933}
+  gameType: 1
 --- !u!4 &1311826446
 Transform:
   m_ObjectHideFlags: 0

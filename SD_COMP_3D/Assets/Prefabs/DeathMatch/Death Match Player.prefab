@@ -465,7 +465,7 @@ GameObject:
   - component: {fileID: 3279100590727229086}
   - component: {fileID: -4273456926704377201}
   m_Layer: 0
-  m_Name: Player
+  m_Name: Death Match Player
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -618,7 +618,7 @@ MonoBehaviour:
   isChargingWeapon: 0
   attackPower: 0
   heldWeapon: {fileID: 0}
-  HoldingPosition: {fileID: 4305407571632970598}
+  HoldingPosition: {fileID: 9028897573454584146}
   HoldParent: {fileID: 1498684102950414386}
   EnemyLayer:
     serializedVersion: 2
@@ -672,8 +672,8 @@ MonoBehaviour:
   m_ActionEvents:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PlayerController3D, Assembly-CSharp
+      - m_Target: {fileID: 5487774211172880404}
+        m_TargetAssemblyTypeName: PlayerControllerDeathMatch, Assembly-CSharp
         m_MethodName: OnMove
         m_Mode: 0
         m_Arguments:
@@ -687,25 +687,13 @@ MonoBehaviour:
     m_ActionId: b8a9947c-cba5-4cac-a9af-7c022b7f65dc
     m_ActionName: 'Player/Movement[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d,/Keyboard/upArrow,/Keyboard/downArrow,/Keyboard/leftArrow,/Keyboard/rightArrow]'
   - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PlayerController3D, Assembly-CSharp
-        m_MethodName: OnLook
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_ActionId: 6c8c2ffb-73cc-4c95-8458-6a3152609e8c
     m_ActionName: 'Player/Look Around[/Mouse/delta]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PlayerController3D, Assembly-CSharp
+      - m_Target: {fileID: 5487774211172880404}
+        m_TargetAssemblyTypeName: PlayerControllerDeathMatch, Assembly-CSharp
         m_MethodName: OnJump
         m_Mode: 0
         m_Arguments:
@@ -720,8 +708,8 @@ MonoBehaviour:
     m_ActionName: 'Player/Jump[/Keyboard/space]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PlayerController3D, Assembly-CSharp
+      - m_Target: {fileID: 5487774211172880404}
+        m_TargetAssemblyTypeName: PlayerControllerDeathMatch, Assembly-CSharp
         m_MethodName: OnInteract
         m_Mode: 0
         m_Arguments:
@@ -744,8 +732,8 @@ MonoBehaviour:
     m_ActionName: 'Player/Pause[/Keyboard/escape]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PlayerController3D, Assembly-CSharp
+      - m_Target: {fileID: 5487774211172880404}
+        m_TargetAssemblyTypeName: PlayerControllerDeathMatch, Assembly-CSharp
         m_MethodName: OnThrow
         m_Mode: 0
         m_Arguments:
@@ -824,6 +812,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   health: 30
   _healthText: {fileID: 0}
+  _playerPoints: 0
   animationScript: {fileID: 0}
   playerScript: {fileID: 0}
   RegisterScript: {fileID: 0}
