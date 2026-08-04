@@ -146,6 +146,7 @@ public class FlagPlayerController : MonoBehaviour
         moveInput = new Vector3(input.x, 0f, input.y);
     }
 
+    //Inventory System
     void Update()
     {
         UpdateMovementAnimation();
@@ -196,6 +197,14 @@ public class FlagPlayerController : MonoBehaviour
             {
                 animManager.PlayJump();
             }
+        }
+    }
+
+    public void PlayJumpAnimation()
+    {
+        if (animManager != null)
+        {
+            animManager.PlayJump();
         }
     }
 
