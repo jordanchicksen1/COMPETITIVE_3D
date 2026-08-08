@@ -18,27 +18,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 267299c6caf53b942939caec630e921f, type: 3}
       propertyPath: m_LocalScale.x
-      value: 2.1667
+      value: 3.4996538
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 267299c6caf53b942939caec630e921f, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2.1667
+      value: 3.4996538
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 267299c6caf53b942939caec630e921f, type: 3}
       propertyPath: m_LocalScale.z
-      value: 2.1667
+      value: 3.4996538
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 267299c6caf53b942939caec630e921f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.47
+      value: 18.57
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 267299c6caf53b942939caec630e921f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.3241
+      value: 20.6
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 267299c6caf53b942939caec630e921f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 4.9
+      value: -25.83
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 267299c6caf53b942939caec630e921f, type: 3}
       propertyPath: m_LocalRotation.w
@@ -222,3 +222,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae63a2784fb7d334d88c633ebb6b28ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Flag
+  stealProtectionDuration: 1.5
