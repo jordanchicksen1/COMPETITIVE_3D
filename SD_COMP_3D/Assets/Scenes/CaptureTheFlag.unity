@@ -909,7 +909,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3baae4c1f7a77c64c98efa20d0e2a41d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlagScoreManager
-  flag: {fileID: 0}
+  flag: {fileID: 890918438}
   pointsPerSecond: 0.5
 --- !u!4 &349980450
 Transform:
@@ -1810,6 +1810,17 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &890918438 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7411980616836683890, guid: b151efac5b206544b9a90cfb293bf95a, type: 3}
+  m_PrefabInstance: {fileID: 1278276969}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae63a2784fb7d334d88c633ebb6b28ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Flag
 --- !u!1001 &903485865
 PrefabInstance:
   m_ObjectHideFlags: 0
