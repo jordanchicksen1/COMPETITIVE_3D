@@ -292,7 +292,7 @@ public class FlagPlayerController : MonoBehaviour
 
     void CheckForInteraction()
     {
-        float interactionRange = 2f;
+        float interactionRange = 2f; 
 
         Collider[] colliders = Physics.OverlapSphere(transform.position, interactionRange, Interact);
 
@@ -531,12 +531,24 @@ public class FlagPlayerController : MonoBehaviour
 
     public void Die()
     {
+        Die(returnFlagToBase: false);
+    }
+
+    public void Die(bool returnFlagToBase)
+    {
         if (IsDead) return;
         IsDead = true;
 
         if (heldFlag != null)
         {
-            heldFlag.Drop(transform.position);
+            if (returnFlagToBase)
+            {
+                heldFlag.ReturnToBase();
+            }
+            else
+            {
+                heldFlag.Drop(transform.position);
+            }
             heldFlag = null;
         }
 
