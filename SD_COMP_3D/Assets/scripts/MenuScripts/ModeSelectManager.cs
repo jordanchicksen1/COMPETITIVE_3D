@@ -2,21 +2,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-// TRUE SLIDING CAROUSEL setup:
-// - "Viewport": a RectTransform with a RectMask2D component, sized to show
-//   however much of the row you want visible (e.g. 3 cards' worth wide).
-//   Anchored/pivoted at its own center (0.5, 0.5) and positioned where you
-//   want the carousel to sit on screen.
-// - "Content": a child of Viewport, anchored/pivoted at (0, 0.5) - left-
-//   middle. Has a Horizontal Layout Group + Content Size Fitter (Horizontal
-//   Fit = Preferred Size) so it grows to fit however many cards you add.
-// - Cards: children of Content, each with GameModeCardUI + a Layout
-//   Element for fixed size.
-//
-// This script SLIDES Content left/right so whichever card is selected
-// lands centered inside Viewport - it reads each card's real position
-// rather than assuming a fixed width/spacing, so it works regardless of
-// card size or how many cards you have.
 public class ModeSelectManager : MonoBehaviour
 {
     [Tooltip("Mode cards, left to right in the order they're displayed.")]
@@ -41,8 +26,6 @@ public class ModeSelectManager : MonoBehaviour
         RefreshSelection();
         RecalculateTarget();
 
-        // Snap instantly to the starting position instead of sliding in
-        // from wherever Content happened to be left in the Editor.
         if (content != null)
         {
             Vector2 pos = content.anchoredPosition;
@@ -96,10 +79,6 @@ public class ModeSelectManager : MonoBehaviour
         RecalculateTarget();
     }
 
-    // Reads the selected card's own position inside Content (as laid out
-    // by the Horizontal Layout Group) and targets shifting Content by
-    // exactly the negative of that - so the selected card ends up at
-    // Content's parent's local zero, i.e. centered in the Viewport.
     private void RecalculateTarget()
     {
         if (cards == null || cards.Length == 0 || cards[selectedIndex] == null)
