@@ -2727,6 +2727,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 7411980616836683890, guid: b151efac5b206544b9a90cfb293bf95a, type: 3}
+      propertyPath: pickupSound
+      value: 
+      objectReference: {fileID: 8300000, guid: f6210f01af1e67945809b25ba9b9bfeb, type: 3}
     - target: {fileID: 8127742670307851194, guid: b151efac5b206544b9a90cfb293bf95a, type: 3}
       propertyPath: m_Name
       value: Flag

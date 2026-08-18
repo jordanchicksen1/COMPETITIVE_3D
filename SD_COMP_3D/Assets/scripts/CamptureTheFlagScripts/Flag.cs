@@ -19,6 +19,10 @@ public class Flag : MonoBehaviour
 
     public bool IsProtectedFromSteal => Time.time - pickedUpAtTime < stealProtectionDuration;
 
+    [Header("Audio")]
+    [Tooltip("Played whenever this flag is picked up - from the ground OR via a steal.")]
+    public AudioClip pickupSound;
+
     private Vector3 basePosition;
     private Quaternion baseRotation;
     private Rigidbody rb;
@@ -37,6 +41,11 @@ public class Flag : MonoBehaviour
         State = FlagState.Carried;
         CurrentCarrier = carrier;
         pickedUpAtTime = Time.time;
+
+        if (pickupSound != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFXAtPoint(pickupSound, transform.position);
+        }
 
         transform.SetParent(holdPoint, false);
         transform.localPosition = Vector3.zero;
