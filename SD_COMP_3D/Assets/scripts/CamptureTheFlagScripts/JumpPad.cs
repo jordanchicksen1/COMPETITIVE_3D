@@ -51,6 +51,7 @@ public class JumpPad : MonoBehaviour
         if (playJumpAnimation)
         {
             player.PlayJumpAnimation();
+            CTFAudioManager.Instance.PlayJumpSound();
         }
     }
 }

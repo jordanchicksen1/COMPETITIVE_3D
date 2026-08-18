@@ -42,10 +42,7 @@ public class Flag : MonoBehaviour
         CurrentCarrier = carrier;
         pickedUpAtTime = Time.time;
 
-        if (pickupSound != null && AudioManager.Instance != null)
-        {
-            AudioManager.Instance.PlaySFXAtPoint(pickupSound, transform.position);
-        }
+        CTFAudioManager.Instance.PlayPickupSound();
 
         transform.SetParent(holdPoint, false);
         transform.localPosition = Vector3.zero;

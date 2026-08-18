@@ -12,5 +12,6 @@ public class KillBox : MonoBehaviour
         }
 
         player.Die(true);
+        CTFAudioManager.Instance.PlayDieSound();
     }
 }

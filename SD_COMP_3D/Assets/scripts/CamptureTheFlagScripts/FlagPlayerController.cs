@@ -196,6 +196,7 @@ public class FlagPlayerController : MonoBehaviour
             if (animManager != null)
             {
                 animManager.PlayJump();
+                CTFAudioManager.Instance.PlayJumpSound();
             }
         }
     }
@@ -231,6 +232,7 @@ public class FlagPlayerController : MonoBehaviour
         isDashing = true;
         dashTimeRemaining = dashDuration;
         dashCooldownRemaining = dashCooldown;
+        CTFAudioManager.Instance.PlayDashSound();
     }
 
     public void OnInteract(InputAction.CallbackContext context)
@@ -532,6 +534,7 @@ public class FlagPlayerController : MonoBehaviour
     public void Die()
     {
         Die(returnFlagToBase: false);
+        CTFAudioManager.Instance.PlayDieSound();
     }
 
     public void Die(bool returnFlagToBase)

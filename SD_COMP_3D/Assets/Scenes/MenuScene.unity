@@ -544,7 +544,7 @@ MonoBehaviour:
   musicVolume: 0
   sfxSource: {fileID: 979950930}
   sfxVolume: 1
-  persistAcrossScenes: 1
+  persistAcrossScenes: 0
 --- !u!4 &979950929
 Transform:
   m_ObjectHideFlags: 0
