@@ -8,46 +8,36 @@ using UnityEngine.InputSystem;
 
 public class WinnerPanelUI : MonoBehaviour
 {
-    [Header("Player Colours")]
-    public List<Color> playerColours = new List<Color>
-    {
-        Color.green,
-        Color.red,
-        Color.blue,
-        Color.yellow
-    };
+    [Header("Player Winner Texts")]
+    [Tooltip("Assign Player 1, Player 2, Player 3 and Player 4 text objects.")]
+    public TMP_Text[] playerWinnerTexts = new TMP_Text[4];
 
     [Header("Winner Text")]
     public TMP_Text titleText;
     public TMP_Text scoreText;
 
-    [Header("Winner Entries")]
-    public WinnerEntryUI winnerEntryPrefab;
-    public Transform winnerEntriesContainer;
-
-    [Header("End Game Buttons")]
-    [Tooltip("Button used to restart the game.")]
+    [Header("Buttons")]
     public Button restartButton;
-
-    [Tooltip("Button used to return to the menu.")]
     public Button menuButton;
 
     [Header("Menu")]
-    [Tooltip("Exact name of your menu scene.")]
     public string menuSceneName = "MainMenu";
 
     private bool panelActive = false;
 
-    public void Show(
-        List<int> winningPlayerIndices,
-        float winningScore
-    )
+    public void Show(List<int> winningPlayerIndices, float winningScore)
     {
-        Debug.Log("=== SHOWING WINNER PANEL ===");
-
         gameObject.SetActive(true);
 
         panelActive = true;
+
+        for (int i = 0; i < playerWinnerTexts.Length; i++)
+        {
+            if (playerWinnerTexts[i] != null)
+            {
+                playerWinnerTexts[i].gameObject.SetActive(false);
+            }
+        }
 
         if (titleText != null)
         {
@@ -58,130 +48,99 @@ public class WinnerPanelUI : MonoBehaviour
                 ? "IT'S A TIE!"
                 : "WE HAVE A WINNER!";
 
-            titleText.color = Color.white;
         }
 
         if (scoreText != null)
         {
             scoreText.gameObject.SetActive(true);
-
-            scoreText.text =
-                $"{Mathf.FloorToInt(winningScore)} points";
-
-            scoreText.color = Color.white;
+            scoreText.text = $"{Mathf.FloorToInt(winningScore)} points";
         }
 
-
-        if (winnerEntriesContainer != null)
+        foreach (int playerIndex in winningPlayerIndices)
         {
-            for (int i = winnerEntriesContainer.childCount - 1; i >= 0; i--)
+            if (playerIndex >= 0 &&
+                playerIndex < playerWinnerTexts.Length &&
+                playerWinnerTexts[playerIndex] != null)
             {
-                Destroy(
-                    winnerEntriesContainer.GetChild(i).gameObject
-                );
-            }
-        }
+                playerWinnerTexts[playerIndex].gameObject.SetActive(true);
 
-        if (winnerEntryPrefab != null &&
-            winnerEntriesContainer != null)
-        {
-            foreach (int playerIndex in winningPlayerIndices)
-            {
-                WinnerEntryUI entry =
-                    Instantiate(
-                        winnerEntryPrefab,
-                        winnerEntriesContainer
-                    );
-
-                entry.gameObject.SetActive(true);
-
-                Color playerColor = Color.white;
-
-                if (playerIndex >= 0 &&
-                    playerIndex < playerColours.Count)
-                {
-                    playerColor = playerColours[playerIndex];
-                }
-
-                entry.Setup(
-                    playerIndex,
-                    playerColor
-                );
+                playerWinnerTexts[playerIndex].text =
+                    $"PLAYER {playerIndex + 1}";
             }
         }
 
         SelectRestartButton();
-
-        Debug.Log("=== WINNER PANEL FINISHED ===");
     }
 
     private void SelectRestartButton()
     {
         if (restartButton == null)
-        {
-            Debug.LogWarning(
-                "WinnerPanelUI: Restart Button is not assigned."
-            );
-
             return;
-        }
 
         restartButton.gameObject.SetActive(true);
         restartButton.interactable = true;
 
-        EventSystem.current?.SetSelectedGameObject(null);
+        if (EventSystem.current != null)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
 
-        EventSystem.current?.SetSelectedGameObject(
-            restartButton.gameObject
-        );
+            EventSystem.current.SetSelectedGameObject(
+                restartButton.gameObject
+            );
+        }
 
         restartButton.Select();
-
-        Debug.Log("Restart button selected.");
     }
 
     public void RestartGame()
     {
-        Debug.Log("Restart Game pressed.");
-
         Time.timeScale = 1f;
 
         Scene currentScene =
             SceneManager.GetActiveScene();
 
-        SceneManager.LoadScene(
-            currentScene.name
-        );
+        SceneManager.LoadScene(currentScene.name);
     }
-
-    public void ReturnToMenu()
+   public void ReturnToMenu()
     {
-        Debug.Log("Return To Menu pressed.");
-
         Time.timeScale = 1f;
 
-        SceneManager.LoadScene(
-            menuSceneName
-        );
+        SceneManager.LoadScene(menuSceneName);
     }
-
 
     private void Update()
     {
         if (!panelActive)
             return;
 
-        if (Keyboard.current == null)
-            return;
-
-        if (Keyboard.current.rKey.wasPressedThisFrame)
+        if (Keyboard.current != null)
         {
-            RestartGame();
+            if (Keyboard.current.rKey.wasPressedThisFrame)
+            {
+                RestartGame();
+                return;
+            }
+
+            if (Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                ReturnToMenu();
+                return;
+            }
         }
 
-        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (Gamepad.current != null)
         {
-            ReturnToMenu();
+            if (Gamepad.current.buttonNorth.wasPressedThisFrame)
+            {
+                RestartGame();
+                return;
+            }
+
+            if (Gamepad.current.buttonEast.wasPressedThisFrame)
+            {
+                ReturnToMenu();
+                return;
+            }
         }
     }
 }
