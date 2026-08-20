@@ -12,6 +12,8 @@ public class FlagPlayerController : MonoBehaviour
     private Rigidbody rb;
     private PlayerInput playerInput;
 
+    private bool gameplayEnabled = true;
+
     [Header("Movement")]
     public float speed = 5f;
     public float jumpForce = 5f;
@@ -20,8 +22,10 @@ public class FlagPlayerController : MonoBehaviour
     [Header("Dash")]
     [Tooltip("How fast the player moves during a dash.")]
     public float dashSpeed = 20f;
+
     [Tooltip("How long the dash burst lasts, in seconds.")]
     public float dashDuration = 0.15f;
+
     [Tooltip("Time between dashes, in seconds.")]
     public float dashCooldown = 1.5f;
 
@@ -30,48 +34,57 @@ public class FlagPlayerController : MonoBehaviour
     private float dashCooldownRemaining;
     private Vector3 dashDirection;
 
-    //Interactions
+    // Interactions
     private GameObject InteractableObject;
     public LayerMask Interact;
-    [SerializeField]
 
-
-    //Attack
+    // Attack
     private GameObject heldWeapon;
+
     [SerializeField]
     private Transform HoldingPosition;
+
     [SerializeField]
     private Transform HoldParent;
 
-    //PLayer Animations
+    // Player Animations
     [Header("Animations")]
     [SerializeField]
     private AnimationManager animManager;
+
     [SerializeField]
     public Transform rayPoint;
 
     [SerializeField]
     private Color outlineColour_;
+
     [SerializeField]
     private List<Color> playerColours;
+
     private GameObject currentBomb;
+
     [SerializeField]
     private float throwForce;
 
     [Header("Head Colour")]
     public Renderer Head_Material_Renderer;
+
     [SerializeField]
     private List<Material> HeadMaterials;
 
-    //Capture The Flag
+    // Capture The Flag
     [Header("Capture The Flag")]
+
     [Tooltip("Layer the flag pickup object lives on, checked alongside Interact.")]
     public LayerMask FlagLayer;
+
     [Tooltip("Where the flag attaches while this player is carrying it.")]
     [SerializeField]
     private Transform FlagHoldPosition;
+
     [Tooltip("Where this player respawns after dying.")]
     public Transform SpawnPoint;
+
     [Tooltip("Optional team id, used by FlagCaptureZone to tell friendly vs enemy flag.")]
     public int TeamId = 0;
 
@@ -81,13 +94,16 @@ public class FlagPlayerController : MonoBehaviour
     private Flag currentFlagInRange;
     private Flag heldFlag;
     private FlagPlayerController currentStealTarget;
+
     public bool HasFlag => heldFlag != null;
     public Flag CarriedFlag => heldFlag;
 
-    //Health / Death
+    // Health / Death
     [Header("Health")]
     public int maxHealth = 100;
+
     private int currentHealth;
+
     public bool IsDead { get; private set; }
 
     void Awake()
@@ -99,56 +115,128 @@ public class FlagPlayerController : MonoBehaviour
     void Start()
     {
         rb.freezeRotation = true;
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.lockState = CursorLockMode.None;
+
         playerInput = GetComponent<PlayerInput>();
-        outlineColour_ = playerColours[playerInput.playerIndex];
+
+        if (playerColours != null &&
+            playerInput.playerIndex >= 0 &&
+            playerInput.playerIndex < playerColours.Count)
+        {
+            outlineColour_ = playerColours[playerInput.playerIndex];
+        }
+
         currentHealth = maxHealth;
+
         AssignHeadColour();
 
         AssignSpawnPointAndTeam();
     }
 
-    void AssignHeadColour()
+
+    public void SetGameplayEnabled(bool enabled)
     {
-        if (playerInput.playerIndex >= 0 && playerInput.playerIndex < HeadMaterials.Count)
+        gameplayEnabled = enabled;
+
+        if (!enabled)
         {
-            Material[] materials = Head_Material_Renderer.materials;
-            materials[1] = HeadMaterials[playerInput.playerIndex];
-            Head_Material_Renderer.materials = materials;
+            moveInput = Vector3.zero;
+
+            isDashing = false;
+            dashTimeRemaining = 0f;
+
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+
+            if (animManager != null)
+            {
+                animManager.PlayIdle();
+            }
         }
     }
+
+    public bool IsGameplayEnabled()
+    {
+        return gameplayEnabled;
+    }
+
+    void AssignHeadColour()
+    {
+        if (Head_Material_Renderer == null ||
+            HeadMaterials == null ||
+            playerInput == null)
+        {
+            return;
+        }
+
+        if (playerInput.playerIndex >= 0 &&
+            playerInput.playerIndex < HeadMaterials.Count)
+        {
+            Material[] materials = Head_Material_Renderer.materials;
+
+            if (materials.Length > 1)
+            {
+                materials[1] = HeadMaterials[playerInput.playerIndex];
+                Head_Material_Renderer.materials = materials;
+            }
+        }
+    }
+
 
     private void AssignSpawnPointAndTeam()
     {
         int joinOrder = playerInput.playerIndex + 1;
+
         TeamId = joinOrder;
 
-        GameObject spawnObj = GameObject.FindWithTag($"P{joinOrder}Spawn");
+        GameObject spawnObj =
+            GameObject.FindWithTag($"P{joinOrder}Spawn");
+
         if (spawnObj != null)
         {
             SpawnPoint = spawnObj.transform;
+
             rb.position = SpawnPoint.position;
             transform.rotation = SpawnPoint.rotation;
         }
         else
         {
-            Debug.LogWarning($"FlagPlayerController: no object tagged 'P{joinOrder}Spawn' found in the scene.");
+            Debug.LogWarning(
+                $"FlagPlayerController: no object tagged 'P{joinOrder}Spawn' found in the scene."
+            );
         }
     }
 
-
-
-    // MOVEMENT
     public void OnMove(InputAction.CallbackContext context)
     {
+        if (!gameplayEnabled)
+        {
+            moveInput = Vector3.zero;
+            return;
+        }
+
         Vector2 input = context.ReadValue<Vector2>();
-        moveInput = new Vector3(input.x, 0f, input.y);
+
+        moveInput = new Vector3(
+            input.x,
+            0f,
+            input.y
+        );
     }
 
-    //Inventory System
     void Update()
     {
+        if (!gameplayEnabled)
+        {
+            moveInput = Vector3.zero;
+            return;
+        }
+
         UpdateMovementAnimation();
 
         if (dashCooldownRemaining > 0f)
@@ -159,12 +247,21 @@ public class FlagPlayerController : MonoBehaviour
 
     private void UpdateMovementAnimation()
     {
+        if (!gameplayEnabled)
+            return;
+
         if (animManager == null || animManager.IsBusy)
         {
             return;
         }
 
-        bool isMoving = new Vector3(moveInput.x, 0f, moveInput.z).sqrMagnitude > 0.001f;
+        bool isMoving =
+            new Vector3(
+                moveInput.x,
+                0f,
+                moveInput.z
+            ).sqrMagnitude > 0.001f;
+
         bool isHoldingWeapon = heldWeapon != null;
 
         if (isMoving && isHoldingWeapon)
@@ -182,27 +279,39 @@ public class FlagPlayerController : MonoBehaviour
         else
         {
             animManager.PlayIdle();
-
         }
     }
 
-
-
     public void OnJump(InputAction.CallbackContext context)
     {
+        if (!gameplayEnabled)
+            return;
+
         if (context.performed && IsGrounded())
         {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
+            rb.linearVelocity = new Vector3(
+                rb.linearVelocity.x,
+                jumpForce,
+                rb.linearVelocity.z
+            );
+
             if (animManager != null)
             {
                 animManager.PlayJump();
-                CTFAudioManager.Instance.PlayJumpSound();
+
+                if (CTFAudioManager.Instance != null)
+                {
+                    CTFAudioManager.Instance.PlayJumpSound();
+                }
             }
         }
     }
 
     public void PlayJumpAnimation()
     {
+        if (!gameplayEnabled)
+            return;
+
         if (animManager != null)
         {
             animManager.PlayJump();
@@ -211,6 +320,9 @@ public class FlagPlayerController : MonoBehaviour
 
     public void OnRun(InputAction.CallbackContext context)
     {
+        if (!gameplayEnabled)
+            return;
+
         if (context.performed)
         {
             speed = speed * SpeedMultiplier;
@@ -223,38 +335,74 @@ public class FlagPlayerController : MonoBehaviour
 
     public void OnDash(InputAction.CallbackContext context)
     {
-        if (!context.performed) return;
-        if (isDashing || dashCooldownRemaining > 0f) return;
+        if (!gameplayEnabled)
+            return;
 
-        Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.z);
-        dashDirection = inputDir.sqrMagnitude > 0.001f ? inputDir.normalized : transform.forward;
+        if (!context.performed)
+            return;
+
+        if (isDashing || dashCooldownRemaining > 0f)
+            return;
+
+        Vector3 inputDir =
+            new Vector3(
+                moveInput.x,
+                0f,
+                moveInput.z
+            );
+
+        dashDirection =
+            inputDir.sqrMagnitude > 0.001f
+                ? inputDir.normalized
+                : transform.forward;
 
         isDashing = true;
+
         dashTimeRemaining = dashDuration;
         dashCooldownRemaining = dashCooldown;
-        CTFAudioManager.Instance.PlayDashSound();
+
+        if (CTFAudioManager.Instance != null)
+        {
+            CTFAudioManager.Instance.PlayDashSound();
+        }
     }
 
     public void OnInteract(InputAction.CallbackContext context)
     {
+        if (!gameplayEnabled)
+            return;
+
         if (context.canceled)
         {
-            if (currentBomb != null && heldWeapon == null && currentBomb.GetComponent<Flag>() == null)
+            if (currentBomb != null &&
+                heldWeapon == null &&
+                currentBomb.GetComponent<Flag>() == null)
             {
                 heldWeapon = currentBomb;
-                heldWeapon.transform.position = HoldingPosition.position;
-                heldWeapon.transform.parent = HoldingPosition;
-                BombManager bombScript = heldWeapon.GetComponent<BombManager>();
+
+                heldWeapon.transform.position =
+                    HoldingPosition.position;
+
+                heldWeapon.transform.parent =
+                    HoldingPosition;
+
+                BombManager bombScript =
+                    heldWeapon.GetComponent<BombManager>();
+
                 if (bombScript != null)
                 {
                     bombScript.canCheckCollisions = true;
                 }
             }
-            else if (currentFlagInRange != null && heldFlag == null && currentFlagInRange.State != Flag.FlagState.Carried)
+            else if (currentFlagInRange != null &&
+                     heldFlag == null &&
+                     currentFlagInRange.State != Flag.FlagState.Carried)
             {
                 PickUpFlag(currentFlagInRange);
             }
-            else if (currentStealTarget != null && heldFlag == null && currentStealTarget.HasFlag)
+            else if (currentStealTarget != null &&
+                     heldFlag == null &&
+                     currentStealTarget.HasFlag)
             {
                 StealFlagFrom(currentStealTarget);
             }
@@ -263,27 +411,44 @@ public class FlagPlayerController : MonoBehaviour
 
     private void PickUpFlag(Flag flag)
     {
-        Transform holdPoint = FlagHoldPosition != null ? FlagHoldPosition : HoldingPosition;
+        if (!gameplayEnabled)
+            return;
+
+        Transform holdPoint =
+            FlagHoldPosition != null
+                ? FlagHoldPosition
+                : HoldingPosition;
+
         flag.PickUp(holdPoint, gameObject);
+
         heldFlag = flag;
     }
 
     private void StealFlagFrom(FlagPlayerController victim)
     {
-        Flag stolenFlag = victim.CarriedFlag;
-        if (stolenFlag == null) return;
+        if (!gameplayEnabled)
+            return;
 
-        if (stolenFlag.IsProtectedFromSteal) return;
+        Flag stolenFlag = victim.CarriedFlag;
+
+        if (stolenFlag == null)
+            return;
+
+        if (stolenFlag.IsProtectedFromSteal)
+            return;
 
         victim.ClearHeldFlag();
+
         PickUpFlag(stolenFlag);
     }
 
     public void DropFlag()
     {
-        if (heldFlag == null) return;
+        if (heldFlag == null)
+            return;
 
         heldFlag.Drop(transform.position);
+
         heldFlag = null;
     }
 
@@ -294,11 +459,20 @@ public class FlagPlayerController : MonoBehaviour
 
     void CheckForInteraction()
     {
-        float interactionRange = 2f; 
+        if (!gameplayEnabled)
+            return;
 
-        Collider[] colliders = Physics.OverlapSphere(transform.position, interactionRange, Interact);
+        float interactionRange = 2f;
+
+        Collider[] colliders =
+            Physics.OverlapSphere(
+                transform.position,
+                interactionRange,
+                Interact
+            );
 
         GameObject closestBomb = null;
+
         float closestDistance = float.MaxValue;
 
         foreach (Collider collider in colliders)
@@ -308,7 +482,12 @@ public class FlagPlayerController : MonoBehaviour
                 continue;
             }
 
-            float distance = Vector3.Distance(transform.position, collider.transform.position);
+            float distance =
+                Vector3.Distance(
+                    transform.position,
+                    collider.transform.position
+                );
+
             if (distance < closestDistance)
             {
                 closestDistance = distance;
@@ -320,7 +499,9 @@ public class FlagPlayerController : MonoBehaviour
         {
             if (currentBomb != null)
             {
-                Outline outline = currentBomb.GetComponent<Outline>();
+                Outline outline =
+                    currentBomb.GetComponent<Outline>();
+
                 if (outline != null)
                 {
                     Destroy(outline);
@@ -328,14 +509,21 @@ public class FlagPlayerController : MonoBehaviour
             }
 
             currentBomb = closestBomb;
+
             if (currentBomb != null)
             {
-                Outline currentOutline = currentBomb.GetComponent<Outline>();
+                Outline currentOutline =
+                    currentBomb.GetComponent<Outline>();
+
                 if (currentOutline == null)
                 {
                     currentBomb.AddComponent<Outline>();
-                    currentOutline = currentBomb.GetComponent<Outline>();
+
+                    currentOutline =
+                        currentBomb.GetComponent<Outline>();
+
                     currentOutline.OutlineWidth = 5;
+
                     AssignColour();
                 }
             }
@@ -347,21 +535,40 @@ public class FlagPlayerController : MonoBehaviour
 
     void CheckForStealTarget()
     {
+        if (!gameplayEnabled)
+            return;
+
         float interactionRange = 2f;
-        Collider[] playerColliders = Physics.OverlapSphere(transform.position, interactionRange, PlayerLayer);
+
+        Collider[] playerColliders =
+            Physics.OverlapSphere(
+                transform.position,
+                interactionRange,
+                PlayerLayer
+            );
 
         FlagPlayerController closestCarrier = null;
+
         float closestDistance = float.MaxValue;
 
         foreach (Collider collider in playerColliders)
         {
-            FlagPlayerController other = collider.GetComponentInParent<FlagPlayerController>();
-            if (other == null || other == this || !other.HasFlag)
+            FlagPlayerController other =
+                collider.GetComponentInParent<FlagPlayerController>();
+
+            if (other == null ||
+                other == this ||
+                !other.HasFlag)
             {
                 continue;
             }
 
-            float distance = Vector3.Distance(transform.position, collider.transform.position);
+            float distance =
+                Vector3.Distance(
+                    transform.position,
+                    collider.transform.position
+                );
+
             if (distance < closestDistance)
             {
                 closestDistance = distance;
@@ -374,15 +581,30 @@ public class FlagPlayerController : MonoBehaviour
 
     void CheckForFlagInteraction()
     {
+        if (!gameplayEnabled)
+            return;
+
         float interactionRange = 2f;
-        Collider[] flagColliders = Physics.OverlapSphere(transform.position, interactionRange, FlagLayer);
+
+        Collider[] flagColliders =
+            Physics.OverlapSphere(
+                transform.position,
+                interactionRange,
+                FlagLayer
+            );
 
         GameObject closestFlagObj = null;
+
         float closestDistance = float.MaxValue;
 
         foreach (Collider collider in flagColliders)
         {
-            float distance = Vector3.Distance(transform.position, collider.transform.position);
+            float distance =
+                Vector3.Distance(
+                    transform.position,
+                    collider.transform.position
+                );
+
             if (distance < closestDistance)
             {
                 closestDistance = distance;
@@ -390,13 +612,18 @@ public class FlagPlayerController : MonoBehaviour
             }
         }
 
-        Flag closestFlag = closestFlagObj != null ? closestFlagObj.GetComponent<Flag>() : null;
+        Flag closestFlag =
+            closestFlagObj != null
+                ? closestFlagObj.GetComponent<Flag>()
+                : null;
 
         if (closestFlag != currentFlagInRange)
         {
             if (currentFlagInRange != null)
             {
-                Outline oldOutline = currentFlagInRange.GetComponent<Outline>();
+                Outline oldOutline =
+                    currentFlagInRange.GetComponent<Outline>();
+
                 if (oldOutline != null)
                 {
                     Destroy(oldOutline);
@@ -405,12 +632,18 @@ public class FlagPlayerController : MonoBehaviour
 
             currentFlagInRange = closestFlag;
 
-            if (currentFlagInRange != null && currentFlagInRange.State != Flag.FlagState.Carried)
+            if (currentFlagInRange != null &&
+                currentFlagInRange.State != Flag.FlagState.Carried)
             {
-                Outline newOutline = currentFlagInRange.GetComponent<Outline>();
+                Outline newOutline =
+                    currentFlagInRange.GetComponent<Outline>();
+
                 if (newOutline == null)
                 {
-                    newOutline = currentFlagInRange.gameObject.AddComponent<Outline>();
+                    newOutline =
+                        currentFlagInRange.gameObject
+                            .AddComponent<Outline>();
+
                     newOutline.OutlineWidth = 5;
                     newOutline.OutlineColor = Color.white;
                 }
@@ -420,58 +653,72 @@ public class FlagPlayerController : MonoBehaviour
 
     public void AssignColour()
     {
+        if (currentBomb == null || playerInput == null)
+            return;
 
-        if (currentBomb != null)
+        Outline outline =
+            currentBomb.gameObject.GetComponent<Outline>();
+
+        if (outline == null)
+            return;
+
+        switch (playerInput.playerIndex)
         {
-            Outline outline = currentBomb.gameObject.GetComponent<Outline>();
-            switch (playerInput.playerIndex)
-            {
-                case 0:
-                    outline.OutlineColor = Color.green;
-                    break;
+            case 0:
+                outline.OutlineColor = Color.green;
+                break;
 
-                case 1:
-                    outline.OutlineColor = Color.red;
-                    break;
+            case 1:
+                outline.OutlineColor = Color.red;
+                break;
 
-                case 2:
-                    outline.OutlineColor = Color.blue;
-                    break;
+            case 2:
+                outline.OutlineColor = Color.blue;
+                break;
 
-                case 3:
-                    outline.OutlineColor = Color.yellow;
-                    break;
+            case 3:
+                outline.OutlineColor = Color.yellow;
+                break;
 
-                default:
-                    outline.OutlineColor = Color.white;
-                    break;
-            }
+            default:
+                outline.OutlineColor = Color.white;
+                break;
         }
     }
 
-
-
     public void OnThrow(InputAction.CallbackContext context)
     {
+        if (!gameplayEnabled)
+            return;
+
         if (context.canceled)
         {
             if (heldWeapon != null)
             {
-                Rigidbody rb = heldWeapon.GetComponent<Rigidbody>();
-                if (rb == null)
+                Rigidbody weaponRb =
+                    heldWeapon.GetComponent<Rigidbody>();
+
+                if (weaponRb == null)
                 {
-                    rb = heldWeapon.AddComponent<Rigidbody>();
+                    weaponRb =
+                        heldWeapon.AddComponent<Rigidbody>();
                 }
 
-                rb.AddForce(transform.forward * throwForce, ForceMode.Impulse);
+                weaponRb.AddForce(
+                    transform.forward * throwForce,
+                    ForceMode.Impulse
+                );
 
-                BombManager bombSCript = heldWeapon.GetComponent<BombManager>();
-                if (bombSCript != null)
+                BombManager bombScript =
+                    heldWeapon.GetComponent<BombManager>();
+
+                if (bombScript != null)
                 {
-                    bombSCript.ActivateBomb();
+                    bombScript.ActivateBomb();
                 }
 
                 heldWeapon.transform.parent = null;
+
                 heldWeapon = null;
 
                 if (animManager != null)
@@ -484,32 +731,66 @@ public class FlagPlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!gameplayEnabled)
+        {
+            moveInput = Vector3.zero;
+
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+
+            return;
+        }
+
         if (isDashing)
         {
-            rb.MovePosition(rb.position + dashDirection * dashSpeed * Time.fixedDeltaTime);
+            rb.MovePosition(
+                rb.position +
+                dashDirection *
+                dashSpeed *
+                Time.fixedDeltaTime
+            );
 
-            dashTimeRemaining -= Time.fixedDeltaTime;
+            dashTimeRemaining -=
+                Time.fixedDeltaTime;
+
             if (dashTimeRemaining <= 0f)
             {
                 isDashing = false;
             }
 
             CheckForInteraction();
+
             return;
         }
 
-        Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.z);
+        Vector3 inputDir =
+            new Vector3(
+                moveInput.x,
+                0f,
+                moveInput.z
+            );
 
-        rb.MovePosition(rb.position + inputDir * speed * Time.fixedDeltaTime);
+        rb.MovePosition(
+            rb.position +
+            inputDir *
+            speed *
+            Time.fixedDeltaTime
+        );
 
         if (inputDir.sqrMagnitude > 0.001f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(inputDir);
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                targetRotation,
-                15f * Time.fixedDeltaTime
-            );
+            Quaternion targetRotation =
+                Quaternion.LookRotation(inputDir);
+
+            transform.rotation =
+                Quaternion.Slerp(
+                    transform.rotation,
+                    targetRotation,
+                    15f * Time.fixedDeltaTime
+                );
         }
 
         CheckForInteraction();
@@ -517,14 +798,23 @@ public class FlagPlayerController : MonoBehaviour
 
     bool IsGrounded()
     {
-        return Physics.Raycast(transform.position, Vector3.down, 1.1f);
+        return Physics.Raycast(
+            transform.position,
+            Vector3.down,
+            1.1f
+        );
     }
-
+      
     public void TakeDamage(int amount)
     {
-        if (IsDead) return;
+        if (!gameplayEnabled)
+            return;
+
+        if (IsDead)
+            return;
 
         currentHealth -= amount;
+
         if (currentHealth <= 0)
         {
             Die();
@@ -534,12 +824,18 @@ public class FlagPlayerController : MonoBehaviour
     public void Die()
     {
         Die(returnFlagToBase: false);
-        CTFAudioManager.Instance.PlayDieSound();
+
+        if (CTFAudioManager.Instance != null)
+        {
+            CTFAudioManager.Instance.PlayDieSound();
+        }
     }
 
     public void Die(bool returnFlagToBase)
     {
-        if (IsDead) return;
+        if (IsDead)
+            return;
+
         IsDead = true;
 
         if (heldFlag != null)
@@ -552,6 +848,7 @@ public class FlagPlayerController : MonoBehaviour
             {
                 heldFlag.Drop(transform.position);
             }
+
             heldFlag = null;
         }
 
