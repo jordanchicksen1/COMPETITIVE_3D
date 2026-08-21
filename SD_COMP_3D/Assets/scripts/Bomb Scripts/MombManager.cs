@@ -126,7 +126,6 @@ public class BombManager : MonoBehaviour
 
             // Handle players (knockback + damage)
             PlayerController3D player = target.GetComponent<PlayerController3D>();
-            PlayerControllerDeathMatch _player = target.GetComponent<PlayerControllerDeathMatch>();
             if (player != null)
             {
                 // Knockback
@@ -152,31 +151,7 @@ public class BombManager : MonoBehaviour
 
                 continue;
             }
-            else if (_player  != null)
-            {
-                // Knockback
-                Vector3 knockback = dir.normalized * explosionForce * falloff;
-                knockback.y = 20f;
-                _player.ApplyKnockback(knockback);
-
-                // Damage
-                PlayerHealth playerHealth = target.GetComponent<PlayerHealth>();
-                if (playerHealth != null)
-                {
-                    float damage = maxDamage * falloff;
-                    playerHealth.TakeDamage(damage);
-
-                    if (playerHealth.health <= damage)
-                    {
-                        if (playerPoints != null)
-                        {
-                            playerPoints._playerPoints++;
-                        }
-                    }
-                }
-
-                continue;
-            }
+            
 
                 // Handle other rigidbodies (physics objects)
                 Rigidbody rb = target.GetComponent<Rigidbody>();

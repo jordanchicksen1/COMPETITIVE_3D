@@ -1,9 +1,12 @@
+using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 using TMPro;
+using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class GameMangerScript : MonoBehaviour
 {
@@ -28,6 +31,16 @@ public class GameMangerScript : MonoBehaviour
     public EventSystem eventSystem;
 
     public BombSpawner _bombSpawner;
+    private bool CheckForEndGame;
+    public Transform LastPlayer;
+    [SerializeField]
+    private Transform WinPodium;
+    public GameObject WinCamera;
+    [SerializeField]
+    private GameObject RestartButton;
+    public GameObject WinCanvas;
+    [SerializeField] string MainMenu;
+    private bool canRunWinRoutine;
 
     public enum GameType { DeathMatch, KingOfTheLedge }
     [SerializeField] private GameType gameType;
@@ -56,15 +69,7 @@ public class GameMangerScript : MonoBehaviour
        switch(gameType)
         {
             case GameType.DeathMatch:
-                for (int i = 0; i < Players.Count; i++)
-                {
-
-                    if (Players[i] != null)
-                    {
-                        PlayerControllerDeathMatch playerScript = Players[i].GetComponent<PlayerControllerDeathMatch>();
-                        playerScript.speed = Speed;
-                    }
-                }
+               
                 break;
             case GameType.KingOfTheLedge:
                 for (int i = 0; i < Players.Count; i++)
@@ -74,6 +79,7 @@ public class GameMangerScript : MonoBehaviour
                     {
                         PlayerController3D playerScript = Players[i].GetComponent<PlayerController3D>();
                         playerScript.speed = Speed;
+                        CheckForEndGame = true;
                     }
                 }
                 break;
@@ -117,6 +123,49 @@ public class GameMangerScript : MonoBehaviour
             controlButtons[j].SetActive(true);
         }
         Time.timeScale = 1;
+
+    }
+
+    private void FixedUpdate()
+    {
+        if (playerInputManager.playerCount == 1 && CheckForEndGame)
+        {
+            if (!canRunWinRoutine)
+            {
+                StartCoroutine(GotoWinPodium());
+                canRunWinRoutine = true;
+            }
+        }
+    }
+
+    public void RestartGame()
+    {
+        string currentScene = SceneManager.GetActiveScene().name;
+        SceneManager.LoadScene(currentScene);
+    }
+
+    public void LoadMainMenu()
+    {
+        SceneManager.LoadScene(MainMenu);
+    }
+
+    IEnumerator GotoWinPodium()
+    {
+        yield return new WaitForSeconds(5);
+
+       if (LastPlayer != null )
+        {
+            LastPlayer.position = WinPodium.transform.position;
+            WinCamera.SetActive(true);
+
+            PlayerController3D playerScript = LastPlayer.GetComponent<PlayerController3D>();
+            Rigidbody rb = LastPlayer.GetComponent<Rigidbody>();
+            rb.useGravity = false;
+            playerScript.speed = 0;
+            WinCanvas.SetActive(true);
+            eventSystem.SetSelectedGameObject(RestartButton);
+        }
+       
 
     }
 }

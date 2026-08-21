@@ -14,12 +14,12 @@ public class PlayerHealth : MonoBehaviour
     public int _playerPoints;
     private PlayerInput _playerInput;
     private GameMangerScript _managerScript;
+    private PlayerInputManager _playerInputManager;
 
     [SerializeField]
     private AnimationManager animationScript;
     [SerializeField]
     private PlayerController3D playerScript;
-    private PlayerControllerDeathMatch deathmatchScript;
     [SerializeField]
     private TargetGroupAutoRegister RegisterScript;
 
@@ -39,7 +39,6 @@ public class PlayerHealth : MonoBehaviour
         {
             case GameType.DeathMatch:
                 _PointsText = _managerScript.HealthText[_playerInput.playerIndex];
-                deathmatchScript = GetComponent<PlayerControllerDeathMatch>();
                 _PointsText.text = _playerPoints.ToString();
                 break;
             case GameType.KingOfTheLedge:
@@ -50,7 +49,7 @@ public class PlayerHealth : MonoBehaviour
         }
         RegisterScript = GetComponent<TargetGroupAutoRegister>();
         animationScript = GetComponent<AnimationManager>();
-
+        _playerInputManager = FindAnyObjectByType<PlayerInputManager>();
 
         lastDisplayedHealth = health;
 
@@ -112,7 +111,6 @@ public class PlayerHealth : MonoBehaviour
         health = maxHealth;
 
         _playerInput.enabled = true;
-        deathmatchScript.speed = 5f; // or whatever your default speed is
         transform.position = _managerScript.midPoint[Random.Range(0, _managerScript.midPoint.Count)].position;
 
         animationScript.PlayIdle();
@@ -141,6 +139,7 @@ public class PlayerHealth : MonoBehaviour
         if (RegisterScript != null)
         {
             RegisterScript.RemovePlayer();
+            transform.tag = null;
         }
         else
         {
@@ -154,7 +153,6 @@ public class PlayerHealth : MonoBehaviour
         {
             case GameType.DeathMatch:
                 transform.position = _managerScript.spawnPoints[_playerInput.playerIndex].position;
-                deathmatchScript.speed = 0;
 
                 _managerScript.Players[_playerInput.playerIndex] = transform;
                 break;
@@ -173,6 +171,14 @@ public class PlayerHealth : MonoBehaviour
         {
             Die();
             PlayerDeath();
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        if (_playerInputManager.playerCount == 1 && !isDead)
+        {
+            _managerScript.LastPlayer = transform;
         }
     }
 }
