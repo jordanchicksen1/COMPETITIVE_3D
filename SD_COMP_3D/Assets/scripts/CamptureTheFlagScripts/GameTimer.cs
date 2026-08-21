@@ -19,12 +19,32 @@ public class GameTimer : MonoBehaviour
 
     public bool GameEnded { get; private set; }
 
+    public bool TimerRunning { get; private set; }
+
     private float remaining;
 
     private void Start()
     {
         remaining = matchDuration;
         GameEnded = false;
+        TimerRunning = false;
+
+        UpdateTimerText();
+
+        Debug.Log(
+            "GameTimer ready. Match duration: " + matchDuration +
+            " (waiting for StartTimer()).");
+    }
+
+    public void StartTimer()
+    {
+        if (TimerRunning || GameEnded)
+        {
+            return;
+        }
+
+        remaining = matchDuration;
+        TimerRunning = true;
 
         UpdateTimerText();
 
@@ -33,8 +53,10 @@ public class GameTimer : MonoBehaviour
 
     private void Update()
     {
-        if (GameEnded)
+        if (!TimerRunning || GameEnded)
+        {
             return;
+        }
 
         remaining -= Time.deltaTime;
 
@@ -42,7 +64,6 @@ public class GameTimer : MonoBehaviour
         {
             remaining = 0f;
             UpdateTimerText();
-
             EndGame();
             return;
         }
@@ -67,6 +88,7 @@ public class GameTimer : MonoBehaviour
             return;
 
         GameEnded = true;
+        TimerRunning = false;
 
         Debug.Log("========== GAME ENDED ==========");
 
@@ -88,7 +110,6 @@ public class GameTimer : MonoBehaviour
             Debug.LogError(
                 "GameTimer ERROR: Score Manager is NOT assigned!"
             );
-
             return;
         }
 
@@ -97,7 +118,6 @@ public class GameTimer : MonoBehaviour
             Debug.LogError(
                 "GameTimer ERROR: Winner Panel is NOT assigned!"
             );
-
             return;
         }
 
@@ -106,12 +126,10 @@ public class GameTimer : MonoBehaviour
             Debug.LogError(
                 "GameTimer ERROR: No FlagPlayerController objects were found!"
             );
-
             return;
         }
 
         List<int> winningPlayerIndices = new List<int>();
-
         float highestScore = float.MinValue;
 
         foreach (FlagPlayerController player in players)
@@ -120,7 +138,6 @@ public class GameTimer : MonoBehaviour
                 continue;
 
             int playerIndex = player.TeamId - 1;
-
             float score = scoreManager.GetScore(playerIndex);
 
             Debug.Log(
@@ -130,7 +147,6 @@ public class GameTimer : MonoBehaviour
             if (score > highestScore)
             {
                 highestScore = score;
-
                 winningPlayerIndices.Clear();
                 winningPlayerIndices.Add(playerIndex);
             }
@@ -143,7 +159,6 @@ public class GameTimer : MonoBehaviour
         Debug.Log(
             $"Winner score: {highestScore}"
         );
-
         Debug.Log(
             $"Winning players: {winningPlayerIndices.Count}"
         );
